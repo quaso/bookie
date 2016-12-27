@@ -80,7 +80,7 @@ public class SeasonServiceTest {
 		this.createSeasonPlace(season2, t2);
 		this.createSeasonPlace(season2, t3);
 
-		final SeasonDetails current = this.seasonService.getCurrent();
+		final SeasonDetails current = this.seasonService.getDetailsCurrent();
 		Assert.assertNotNull(current);
 		Assert.assertNotNull(current.getSeason());
 		Assert.assertEquals(season.getTimeStart(), current.getSeason().getTimeStart());
@@ -96,25 +96,25 @@ public class SeasonServiceTest {
 		}
 
 		final SeasonDetails seasonDetails = this.seasonService
-				.getByDate(Date.from(now.plusYears(1).atStartOfDay(ZoneId.systemDefault()).toInstant()));
+				.getDetailsByDate(Date.from(now.plusYears(1).atStartOfDay(ZoneId.systemDefault()).toInstant()));
 		Assert.assertNotNull(seasonDetails);
 		Assert.assertNotNull(seasonDetails.getSeason());
 		Assert.assertEquals(season2.getTimeStart(), seasonDetails.getSeason().getTimeStart());
 		Assert.assertEquals(1, seasonDetails.getPlaces().size());
 		Assert.assertEquals(2, seasonDetails.getPlaces().get(0).getPlaceCount());
 
-		final SeasonDetails seasonDetails2 = this.seasonService.getByDate(season2.getDateStart());
+		final SeasonDetails seasonDetails2 = this.seasonService.getDetailsByDate(season2.getDateStart());
 		Assert.assertNotNull(seasonDetails2);
 		Assert.assertNotNull(seasonDetails2.getSeason());
 		Assert.assertEquals(seasonDetails.getSeason().getId(), seasonDetails2.getSeason().getId());
 
-		final SeasonDetails seasonDetails3 = this.seasonService.getByDate(season2.getDateEnd());
+		final SeasonDetails seasonDetails3 = this.seasonService.getDetailsByDate(season2.getDateEnd());
 		Assert.assertNotNull(seasonDetails3);
 		Assert.assertNotNull(seasonDetails3.getSeason());
 		Assert.assertEquals(seasonDetails.getSeason().getId(), seasonDetails3.getSeason().getId());
 
 		@SuppressWarnings("deprecation")
-		final SeasonDetails seasonDetails4 = this.seasonService.getByDate(new Date(1900, 1, 1));
+		final SeasonDetails seasonDetails4 = this.seasonService.getDetailsByDate(new Date(1900, 1, 1));
 		Assert.assertNull(seasonDetails4);
 
 	}
