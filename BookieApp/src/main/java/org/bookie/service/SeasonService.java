@@ -24,15 +24,22 @@ public class SeasonService {
 		return season;
 	}
 
-	public SeasonDetails getCurrent() {
-		return this.getByDate(new Date());
+	public Season getById(final String seasonId) {
+		return this.seasonRepository.findOne(seasonId);
 	}
 
-	public SeasonDetails getByDate(final Date date) {
+	public Season getByDate(final Date date) {
+		return this.seasonRepository.findByDateStartLessThanEqualAndDateEndGreaterThanEqual(date, date);
+	}
+
+	public SeasonDetails getDetailsCurrent() {
+		return this.getDetailsByDate(new Date());
+	}
+
+	public SeasonDetails getDetailsByDate(final Date date) {
 		SeasonDetails result = null;
 
-		final Season currentSeason = this.seasonRepository.findByDateStartLessThanEqualAndDateEndGreaterThanEqual(date,
-				date);
+		final Season currentSeason = this.getByDate(date);
 
 		if (currentSeason != null) {
 			result = new SeasonDetails(currentSeason);
@@ -40,12 +47,8 @@ public class SeasonService {
 			for (final String placeType : placeTypes) {
 				final PlacesInfo pi = new PlacesInfo();
 				pi.setPlaceType(placeType);
-				// Integer count =
-				// this.seasonPlaceRepository.count(currentSeason.getId(),
-				// placeType);
 				final long count = this.seasonPlaceRepository
 						.countBySeasonIdEqualsAndPlaceTypeEquals(currentSeason.getId(), placeType);
-
 				pi.setPlaceCount((int) count);
 				result.getPlaces().add(pi);
 			}

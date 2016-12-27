@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @RestController
-@RequestMapping("/season")
+@RequestMapping("/api/season")
 public class SeasonEndpoint {
 
 	@Autowired
@@ -34,11 +34,11 @@ public class SeasonEndpoint {
 
 	@RequestMapping(method = RequestMethod.GET, value = "/")
 	public SeasonDetails getCurrent() {
-		return this.seasonService.getCurrent();
+		return this.seasonService.getDetailsCurrent();
 	}
 
 	@RequestMapping(method = RequestMethod.GET, value = "/{date}")
 	public SeasonDetails getByDate(@PathVariable final Date date) {
-		return this.seasonService.getByDate(date);
+		return this.seasonService.getDetailsByDate(date);
 	}
 }
