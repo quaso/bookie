@@ -20,8 +20,8 @@ public class Booking extends AbstractEntity {
 	@Column(name = "timeStart", nullable = false)
 	private Date timeStart;
 
-	@Column(name = "timesEnd", nullable = false)
-	private Date timesEnd;
+	@Column(name = "timeEnd", nullable = false)
+	private Date timeEnd;
 
 	@Column(name = "type", nullable = false, length = 255)
 	private String type;
@@ -65,12 +65,12 @@ public class Booking extends AbstractEntity {
 		this.timeStart = timeStart;
 	}
 
-	public Date getTimesEnd() {
-		return this.timesEnd;
+	public Date getTimeEnd() {
+		return this.timeEnd;
 	}
 
-	public void setTimesEnd(final Date timesEnd) {
-		this.timesEnd = timesEnd;
+	public void setTimeEnd(final Date timesEnd) {
+		this.timeEnd = timesEnd;
 	}
 
 	public String getType() {
@@ -146,9 +146,9 @@ public class Booking extends AbstractEntity {
 			builder.append(this.timeStart);
 			builder.append(", ");
 		}
-		if (this.timesEnd != null) {
-			builder.append("timesEnd=");
-			builder.append(this.timesEnd);
+		if (this.timeEnd != null) {
+			builder.append("timeEnd=");
+			builder.append(this.timeEnd);
 			builder.append(", ");
 		}
 		if (this.type != null) {
