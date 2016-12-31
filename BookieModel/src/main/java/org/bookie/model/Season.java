@@ -4,6 +4,10 @@ import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinColumns;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -15,10 +19,10 @@ import org.hibernate.annotations.Proxy;
 @Table(name = "Season")
 public class Season extends AbstractEntity {
 
-	@Column(name = "name", nullable = false, unique = true, length = 255)
+	@Column(name = "name", nullable = false, length = 255)
 	private String name;
 
-	@Column(name = "dateStart", nullable = false, unique = true)
+	@Column(name = "dateStart", nullable = false)
 	@Temporal(TemporalType.DATE)
 	private Date dateStart;
 
@@ -36,6 +40,11 @@ public class Season extends AbstractEntity {
 	// TODO: List<> ???
 	@Column(name = "types", nullable = false, length = 255)
 	private String types;
+
+	@ManyToOne(targetEntity = Organization.class, fetch = FetchType.LAZY)
+	@org.hibernate.annotations.Cascade({ org.hibernate.annotations.CascadeType.LOCK })
+	@JoinColumns({ @JoinColumn(name = "organizationId", referencedColumnName = "id", nullable = false) })
+	private Organization organization;
 
 	public void setName(final String value) {
 		this.name = value;
@@ -95,6 +104,14 @@ public class Season extends AbstractEntity {
 
 	public void setTypes(final String types) {
 		this.types = types;
+	}
+
+	public Organization getOrganization() {
+		return this.organization;
+	}
+
+	public void setOrganization(final Organization organization) {
+		this.organization = organization;
 	}
 
 	@Override

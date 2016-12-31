@@ -10,12 +10,14 @@ import java.util.List;
 import javax.transaction.Transactional;
 
 import org.bookie.model.Booking;
+import org.bookie.model.Organization;
 import org.bookie.model.Place;
 import org.bookie.model.Role;
 import org.bookie.model.Season;
 import org.bookie.model.SeasonPlace;
 import org.bookie.model.User;
 import org.bookie.repository.BookingRepositoryCustom;
+import org.bookie.repository.OrganizationRepository;
 import org.bookie.repository.PlaceRepository;
 import org.bookie.repository.RoleRepository;
 import org.bookie.repository.SeasonPlaceRepository;
@@ -33,7 +35,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 @SpringBootTest(classes = MainTestConfiguration.class)
 @ActiveProfiles("test")
 @Transactional
-public class BookingTest {
+public class BookingRepositoryTest {
 
 	@Autowired
 	private BookingRepositoryCustom bookingRepository;
@@ -53,21 +55,28 @@ public class BookingTest {
 	@Autowired
 	private SeasonPlaceRepository seasonPlaceRepository;
 
-	// @Test
+	@Autowired
+	private OrganizationRepository organizationRepository;
+
+	@Test
 	public void testFind() {
 		final Role role = this.createRole("role");
 		final User user1 = this.createUser("name1", role);
 		final User user2 = this.createUser("name2", role);
+
+		final Organization org = new Organization();
+		org.setName("org");
+		this.organizationRepository.save(org);
 
 		final LocalDate now = LocalDate.now();
 		final Date start = Date.from(now.withDayOfMonth(1).atStartOfDay(ZoneId.systemDefault()).toInstant());
 		final Date end = Date.from(
 				now.withDayOfMonth(1).plusMonths(1).atStartOfDay(ZoneId.systemDefault()).minusMinutes(1).toInstant());
 
-		final Season season = this.createSeason(start, end, "season1", "aaa,bbb");
-		final Place place1 = this.createPlace("p1", "aaa");
+		final Season season = this.createSeason(start, end, "season1", "aaa,bbb", org);
+		final Place place1 = this.createPlace("p1", "aaa", org);
 		this.createSeasonPlace(season, place1);
-		final Place place2 = this.createPlace("p2", "aaa");
+		final Place place2 = this.createPlace("p2", "aaa", org);
 		this.createSeasonPlace(season, place2);
 
 		this.createBooking(Date.from(now.atTime(12, 0).toInstant(ZoneOffset.UTC)),
@@ -135,15 +144,19 @@ public class BookingTest {
 		final User user1 = this.createUser("name1", role);
 		final User user2 = this.createUser("name2", role);
 
+		final Organization org = new Organization();
+		org.setName("org");
+		this.organizationRepository.save(org);
+
 		final LocalDate now = LocalDate.now();
 		final Date start = Date.from(now.withDayOfMonth(1).atStartOfDay(ZoneId.systemDefault()).toInstant());
 		final Date end = Date.from(
 				now.withDayOfMonth(1).plusMonths(1).atStartOfDay(ZoneId.systemDefault()).minusMinutes(1).toInstant());
 
-		final Season season = this.createSeason(start, end, "season1", "aaa,bbb");
-		final Place place1 = this.createPlace("p1", "aaa");
+		final Season season = this.createSeason(start, end, "season1", "aaa,bbb", org);
+		final Place place1 = this.createPlace("p1", "aaa", org);
 		this.createSeasonPlace(season, place1);
-		final Place place2 = this.createPlace("p2", "aaa");
+		final Place place2 = this.createPlace("p2", "aaa", org);
 		this.createSeasonPlace(season, place2);
 
 		this.createBooking(Date.from(now.atTime(12, 0).toInstant(ZoneOffset.UTC)),
@@ -206,10 +219,11 @@ public class BookingTest {
 		return booking;
 	}
 
-	private Place createPlace(final String name, final String type) {
+	private Place createPlace(final String name, final String type, final Organization organization) {
 		final Place place = new Place();
 		place.setName(name);
 		place.setType(type);
+		place.setOrganization(organization);
 		this.placeRepository.save(place);
 		return place;
 	}
@@ -230,7 +244,8 @@ public class BookingTest {
 		return user;
 	}
 
-	private Season createSeason(final Date start, final Date end, final String name, final String types) {
+	private Season createSeason(final Date start, final Date end, final String name, final String types,
+			final Organization organization) {
 		final Season season = new Season();
 		season.setDateStart(start);
 		season.setDateEnd(end);
@@ -238,6 +253,7 @@ public class BookingTest {
 		season.setTimeEnd(22 * 60);
 		season.setName(name);
 		season.setTypes(types);
+		season.setOrganization(organization);
 		this.seasonRepository.save(season);
 		return season;
 	}

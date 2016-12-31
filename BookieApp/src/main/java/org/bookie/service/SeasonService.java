@@ -20,6 +20,7 @@ public class SeasonService {
 	private SeasonPlaceRepository seasonPlaceRepository;
 
 	public Season createSeason(final Season season) {
+		// TODO: check if name, dateStart are unique for the organization
 		this.seasonRepository.save(season);
 		return season;
 	}
@@ -28,18 +29,19 @@ public class SeasonService {
 		return this.seasonRepository.findOne(seasonId);
 	}
 
-	public Season getByDate(final Date date) {
-		return this.seasonRepository.findByDateStartLessThanEqualAndDateEndGreaterThanEqual(date, date);
+	public Season getByDate(final String organizationName, final Date date) {
+		return this.seasonRepository.findByOrganizationNameEqualsAndDateStartLessThanEqualAndDateEndGreaterThanEqual(
+				organizationName, date, date);
 	}
 
-	public SeasonDetails getDetailsCurrent() {
-		return this.getDetailsByDate(new Date());
+	public SeasonDetails getDetailsCurrent(final String organizationName) {
+		return this.getDetailsByDate(organizationName, new Date());
 	}
 
-	public SeasonDetails getDetailsByDate(final Date date) {
+	public SeasonDetails getDetailsByDate(final String organizationName, final Date date) {
 		SeasonDetails result = null;
 
-		final Season currentSeason = this.getByDate(date);
+		final Season currentSeason = this.getByDate(organizationName, date);
 
 		if (currentSeason != null) {
 			result = new SeasonDetails(currentSeason);

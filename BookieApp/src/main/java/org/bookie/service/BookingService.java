@@ -45,14 +45,15 @@ public class BookingService {
 			throw new IllegalStateException("Owner could not be identified");
 		}
 
-		final Season season = this.seasonService.getByDate(timeStart);
-		if (season == null) {
-			throw new IllegalStateException("No season is defined for requested booking date");
-		}
-
 		final Place place = this.placeRepository.findOne(placeId);
 		if (place == null) {
 			throw new IllegalStateException("Place could not be identified");
+		}
+
+		// TODO: check if organization is loaded
+		final Season season = this.seasonService.getByDate(place.getOrganization().getName(), timeStart);
+		if (season == null) {
+			throw new IllegalStateException("No season is defined for requested booking date");
 		}
 
 		final Booking booking = new Booking();
