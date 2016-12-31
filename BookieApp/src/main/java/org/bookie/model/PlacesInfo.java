@@ -1,4 +1,4 @@
-package org.bookie.service.model;
+package org.bookie.model;
 
 public class PlacesInfo {
 

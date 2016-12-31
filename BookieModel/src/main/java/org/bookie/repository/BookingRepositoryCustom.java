@@ -12,4 +12,6 @@ public interface BookingRepositoryCustom extends BookingRepository {
 
 	public List<Booking> find(final Date dateStart, final Date dateEnd, final Collection<String> types,
 			final Collection<String> placeIds, final String ownerId);
+
+	public boolean checkFreeTime(Booking booking);
 }

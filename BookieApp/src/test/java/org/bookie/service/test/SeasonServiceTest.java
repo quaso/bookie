@@ -5,14 +5,14 @@ import java.time.ZoneId;
 import java.util.Date;
 
 import org.bookie.model.Place;
+import org.bookie.model.PlacesInfo;
 import org.bookie.model.Season;
+import org.bookie.model.SeasonDetails;
 import org.bookie.model.SeasonPlace;
 import org.bookie.repository.PlaceRepository;
 import org.bookie.repository.SeasonPlaceRepository;
 import org.bookie.repository.SeasonRepository;
 import org.bookie.service.SeasonService;
-import org.bookie.service.model.PlacesInfo;
-import org.bookie.service.model.SeasonDetails;
 import org.bookie.test.TestConfiguration;
 import org.junit.Assert;
 import org.junit.Test;

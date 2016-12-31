@@ -1,4 +1,4 @@
-package org.bookie.service.model;
+package org.bookie.model;
 
 import java.util.ArrayList;
 import java.util.List;

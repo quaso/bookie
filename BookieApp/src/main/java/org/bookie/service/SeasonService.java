@@ -2,11 +2,11 @@ package org.bookie.service;
 
 import java.util.Date;
 
+import org.bookie.model.PlacesInfo;
 import org.bookie.model.Season;
+import org.bookie.model.SeasonDetails;
 import org.bookie.repository.SeasonPlaceRepository;
 import org.bookie.repository.SeasonRepository;
-import org.bookie.service.model.PlacesInfo;
-import org.bookie.service.model.SeasonDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
