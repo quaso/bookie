@@ -32,6 +32,8 @@ public class Season extends AbstractEntity {
 	@Column(name = "timeEnd", nullable = false)
 	private int timeEnd;
 
+	// @JsonIgnore
+	// TODO: List<> ???
 	@Column(name = "types", nullable = false, length = 255)
 	private String types;
 

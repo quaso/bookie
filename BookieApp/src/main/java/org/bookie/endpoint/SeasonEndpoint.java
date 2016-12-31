@@ -4,9 +4,10 @@ import java.net.URI;
 import java.util.Date;
 
 import org.bookie.model.Season;
+import org.bookie.model.SeasonDetails;
 import org.bookie.service.SeasonService;
-import org.bookie.service.model.SeasonDetails;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -29,7 +30,9 @@ public class SeasonEndpoint {
 		final URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
 				.buildAndExpand(season.getId()).toUri();
 
-		return ResponseEntity.created(location).build();
+		final ResponseEntity<Season> response = new ResponseEntity<>(season, HttpStatus.CREATED);
+		response.getHeaders().setLocation(location);
+		return response;
 	}
 
 	@RequestMapping(method = RequestMethod.GET, value = "/")
