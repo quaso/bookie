@@ -15,4 +15,8 @@ public class OrganizationService {
 		return this.organizationRepository.findByName(organizationName);
 	}
 
+	public void createOrganization(final Organization organization) {
+		this.organizationRepository.save(organization);
+	}
+
 }
