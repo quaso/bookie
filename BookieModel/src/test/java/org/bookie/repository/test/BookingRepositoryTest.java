@@ -171,6 +171,18 @@ public class BookingRepositoryTest {
 		final Booking booking = new Booking();
 		booking.setPlace(place1);
 
+		booking.setTimeStart(Date.from(now.atTime(9, 0).toInstant(ZoneOffset.UTC)));
+		booking.setTimeEnd(Date.from(now.atTime(9, 59).toInstant(ZoneOffset.UTC)));
+		Assert.assertTrue(this.bookingRepository.checkFreeTime(booking));
+
+		booking.setTimeStart(Date.from(now.atTime(9, 0).toInstant(ZoneOffset.UTC)));
+		booking.setTimeEnd(Date.from(now.atTime(10, 0).toInstant(ZoneOffset.UTC)));
+		Assert.assertTrue(this.bookingRepository.checkFreeTime(booking));
+
+		booking.setTimeStart(Date.from(now.atTime(9, 0).toInstant(ZoneOffset.UTC)));
+		booking.setTimeEnd(Date.from(now.atTime(10, 30).toInstant(ZoneOffset.UTC)));
+		Assert.assertFalse(this.bookingRepository.checkFreeTime(booking));
+
 		booking.setTimeStart(Date.from(now.atTime(11, 0).toInstant(ZoneOffset.UTC)));
 		booking.setTimeEnd(Date.from(now.atTime(12, 0).toInstant(ZoneOffset.UTC)));
 		Assert.assertTrue(this.bookingRepository.checkFreeTime(booking));
