@@ -91,50 +91,50 @@ public class BookingRepositoryTest {
 		List<Booking> temp;
 		// search by type (one result)
 		temp = this.bookingRepository.find(Date.from(now.atTime(10, 0).toInstant(ZoneOffset.UTC)),
-				Date.from(now.atTime(14, 0).toInstant(ZoneOffset.UTC)), Arrays.asList(new String[] { "ttt" }), null,
+				Date.from(now.atTime(14, 0).toInstant(ZoneOffset.UTC)), Arrays.asList("ttt"), null,
 				null);
 		Assert.assertEquals(1, temp.size());
 
 		// search by type (more results)
 		temp = this.bookingRepository.find(Date.from(now.atTime(10, 0).toInstant(ZoneOffset.UTC)),
-				Date.from(now.atTime(14, 0).toInstant(ZoneOffset.UTC)), Arrays.asList(new String[] { "zzz" }), null,
+				Date.from(now.atTime(14, 0).toInstant(ZoneOffset.UTC)), Arrays.asList("zzz"), null,
 				null);
 		Assert.assertEquals(3, temp.size());
 
 		// search by more types (existing and non-existing)
 		temp = this.bookingRepository.find(Date.from(now.atTime(11, 0).toInstant(ZoneOffset.UTC)),
 				Date.from(now.atTime(14, 0).toInstant(ZoneOffset.UTC)),
-				Arrays.asList(new String[] { "ttt", "zzz", "yyy" }), null, null);
+				Arrays.asList("ttt", "zzz", "yyy"), null, null);
 		Assert.assertEquals(3, temp.size());
 
 		// search by time (no result)
 		temp = this.bookingRepository.find(Date.from(now.atTime(13, 0).toInstant(ZoneOffset.UTC)),
 				Date.from(now.atTime(13, 30).toInstant(ZoneOffset.UTC)),
-				Arrays.asList(new String[] { "ttt", "zzz", "yyy" }), null, null);
+				Arrays.asList("ttt", "zzz", "yyy"), null, null);
 		Assert.assertEquals(0, temp.size());
 
 		// search by userId
 		temp = this.bookingRepository.find(Date.from(now.atTime(10, 0).toInstant(ZoneOffset.UTC)),
 				Date.from(now.atTime(14, 0).toInstant(ZoneOffset.UTC)),
-				Arrays.asList(new String[] { "ttt", "zzz", "yyy" }), null, user2.getId());
+				Arrays.asList("ttt", "zzz", "yyy"), null, user2.getId());
 		Assert.assertEquals(1, temp.size());
 
 		// search by placeId
 		temp = this.bookingRepository.find(Date.from(now.atTime(10, 0).toInstant(ZoneOffset.UTC)),
 				Date.from(now.atTime(14, 0).toInstant(ZoneOffset.UTC)),
-				Arrays.asList(new String[] { "ttt", "zzz", "yyy" }), Arrays.asList(place1.getId()), null);
+				Arrays.asList("ttt", "zzz", "yyy"), Arrays.asList(place1.getId()), null);
 		Assert.assertEquals(3, temp.size());
 
 		// search by userId and placeId
 		temp = this.bookingRepository.find(Date.from(now.atTime(10, 0).toInstant(ZoneOffset.UTC)),
 				Date.from(now.atTime(14, 0).toInstant(ZoneOffset.UTC)),
-				Arrays.asList(new String[] { "ttt", "zzz", "yyy" }), Arrays.asList(place1.getId()), user1.getId());
+				Arrays.asList("ttt", "zzz", "yyy"), Arrays.asList(place1.getId()), user1.getId());
 		Assert.assertEquals(2, temp.size());
 
 		// search by userId and placeId (no result)
 		temp = this.bookingRepository.find(Date.from(now.atTime(10, 0).toInstant(ZoneOffset.UTC)),
 				Date.from(now.atTime(14, 0).toInstant(ZoneOffset.UTC)),
-				Arrays.asList(new String[] { "ttt", "zzz", "yyy" }), Arrays.asList(place2.getId()), user2.getId());
+				Arrays.asList("ttt", "zzz", "yyy"), Arrays.asList(place2.getId()), user2.getId());
 		Assert.assertEquals(0, temp.size());
 	}
 
@@ -214,6 +214,10 @@ public class BookingRepositoryTest {
 		booking.setTimeStart(Date.from(now.atTime(14, 0).toInstant(ZoneOffset.UTC)));
 		booking.setTimeEnd(Date.from(now.atTime(14, 1).toInstant(ZoneOffset.UTC)));
 		Assert.assertTrue(this.bookingRepository.checkFreeTime(booking));
+
+		booking.setTimeStart(Date.from(now.atTime(11, 59).toInstant(ZoneOffset.UTC)));
+		booking.setTimeEnd(Date.from(now.atTime(17, 1).toInstant(ZoneOffset.UTC)));
+		Assert.assertFalse(this.bookingRepository.checkFreeTime(booking));
 	}
 
 	private Booking createBooking(final Date start, final Date end, final String type, final User user,
