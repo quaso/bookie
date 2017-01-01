@@ -1,6 +1,8 @@
 package org.bookie.endpoint;
 
 import java.net.URI;
+import java.time.LocalDate;
+import java.util.Set;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.bookie.exception.NotFreeException;
@@ -15,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -26,7 +29,7 @@ public class BookingEndpoint {
 	@Autowired
 	private BookingService bookingService;
 
-	@RequestMapping(method = RequestMethod.POST)
+	@RequestMapping(method = RequestMethod.POST, value = "/")
 	public ResponseEntity<?> createBooking(final BookingEx booking) throws NotFreeException {
 		final Booking result = this.bookingService.createBooking(booking.getTimeStart(), booking.getTimeEnd(),
 				booking.getType(), booking.getOwnerId(), booking.getPlaceId(), booking.getNote());
@@ -39,7 +42,13 @@ public class BookingEndpoint {
 		return response;
 	}
 
-	@RequestMapping(method = RequestMethod.DELETE)
+	@RequestMapping(method = RequestMethod.GET, value = "/findFree/")
+	public Set<LocalDate> findFreeTimeSlots(@RequestParam final int duration, @RequestParam final int timeStart,
+			@RequestParam final int timeEnd, @RequestParam final Set<LocalDate> days) {
+		return this.bookingService.findFreeTimeSlots(duration, timeStart, timeEnd, days);
+	}
+
+	@RequestMapping(method = RequestMethod.DELETE, value = "/")
 	@ResponseStatus(HttpStatus.OK)
 	public void deleteBooking(final String bookingId) {
 		this.bookingService.delete(bookingId);

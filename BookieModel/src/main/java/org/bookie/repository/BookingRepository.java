@@ -1,11 +1,13 @@
 package org.bookie.repository;
 
+import java.util.Date;
+import java.util.List;
+
 import org.bookie.model.Booking;
 import org.springframework.data.repository.CrudRepository;
 
 interface BookingRepository extends CrudRepository<Booking, String> {
-	// public Long
-	// countByTimeStartGreaterThanEqualAndTimeEndLessThanEqualAndPlaceIdEquals(final
-	// Date timeStart,
-	// final Date timeEnd, String placeId);
+
+	public List<Booking> findTimeStartGreaterThanEqualAndTimeEndLessThanEqualOrderByTimeStart(Date timeStart,
+			Date timeEnd);
 }

@@ -138,4 +138,11 @@ public class BookingRepositoryCustomImpl implements BookingRepositoryCustom {
 		this.bookingRepository.deleteAll();
 	}
 
+	@Override
+	public List<Booking> findTimeStartGreaterThanEqualAndTimeEndLessThanEqualOrderByTimeStart(final Date timeStart,
+			final Date timeEnd) {
+		return this.bookingRepository.findTimeStartGreaterThanEqualAndTimeEndLessThanEqualOrderByTimeStart(timeStart,
+				timeEnd);
+	}
+
 }

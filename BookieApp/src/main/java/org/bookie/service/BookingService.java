@@ -1,7 +1,13 @@
 package org.bookie.service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
@@ -90,5 +96,67 @@ public class BookingService {
 		final LocalDate lds = LocalDate.from(timeStart.toInstant());
 		final LocalDate lde = LocalDate.from(timeEnd.toInstant());
 		return lds.equals(lde);
+	}
+
+	// TODO: create tests
+	public Set<LocalDate> findFreeTimeSlots(final int duration, final int minutesStart, final int minutesEnd,
+			final Set<LocalDate> days) {
+		if (minutesStart < 0 || minutesStart > 24 * 60) {
+			throw new IllegalArgumentException("TimeStart");
+		}
+		if (minutesEnd < minutesStart || minutesEnd > 24 * 60) {
+			throw new IllegalArgumentException("TimeEnd");
+		}
+		if (minutesEnd - minutesStart < duration) {
+			throw new IllegalArgumentException("Duration");
+		}
+
+		final Set<LocalDate> result = new HashSet<>();
+		for (final LocalDate date : days) {
+			final Date start = Date
+					.from(date.atStartOfDay().plusMinutes(minutesStart).atZone(ZoneId.systemDefault()).toInstant());
+			final Date end = Date
+					.from(date.atStartOfDay().plusMinutes(minutesEnd).atZone(ZoneId.systemDefault()).toInstant());
+			// get existing bookings which are in desired time frame
+			final List<Booking> bookings = this.bookingRepository
+					.findTimeStartGreaterThanEqualAndTimeEndLessThanEqualOrderByTimeStart(start, end);
+
+			// find unique placeIds
+			final List<String> placeIds = bookings.stream().map(b -> b.getPlace().getId()).distinct()
+					.collect(Collectors.toList());
+
+			// for each placeId evaluate if there is free time slot (or until
+			// first match)
+			for (final String pid : placeIds) {
+				// get bookings just for the placeId
+				final List<Booking> bookingsForPlace = bookings.stream().filter(b -> pid.equals(b.getPlace().getId()))
+						.collect(Collectors.toList());
+
+				boolean found = false;
+				LocalDateTime timeEnd = date.atStartOfDay().plusMinutes(minutesStart);
+				for (final Booking booking : bookingsForPlace) {
+					timeEnd = timeEnd.plusMinutes(duration);
+					final int expectedEndMinutes = timeEnd.getHour() * 60 + timeEnd.getMinute();
+					if (expectedEndMinutes > minutesEnd || expectedEndMinutes > 24 * 60) {
+						// expected end is after desired end or after midnight
+						break;
+					}
+					final LocalDateTime timeStart = LocalDateTime.ofInstant(booking.getTimeStart().toInstant(),
+							ZoneId.systemDefault());
+					if (timeStart.compareTo(timeEnd) > 0) {
+						// time slot found
+						found = true;
+						break;
+					}
+					// get end of the booking
+					timeEnd = LocalDateTime.ofInstant(booking.getTimeEnd().toInstant(), ZoneId.systemDefault());
+				}
+				if (found) {
+					result.add(date);
+				}
+			}
+
+		}
+		return result;
 	}
 }
