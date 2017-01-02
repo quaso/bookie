@@ -7,7 +7,6 @@ import org.springframework.context.annotation.Import;
 
 @EnableAutoConfiguration
 @Import(DatasourceConfiguration.class)
-// @TestPropertySource(locations = "classpath:application-test.properties")
 @SpringBootConfiguration
 public class MainTestConfiguration {
 

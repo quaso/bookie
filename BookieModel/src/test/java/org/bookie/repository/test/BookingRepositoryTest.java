@@ -1,8 +1,8 @@
 package org.bookie.repository.test;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -69,9 +69,8 @@ public class BookingRepositoryTest {
 		this.organizationRepository.save(org);
 
 		final LocalDate now = LocalDate.now();
-		final Date start = Date.from(now.withDayOfMonth(1).atStartOfDay(ZoneId.systemDefault()).toInstant());
-		final Date end = Date.from(
-				now.withDayOfMonth(1).plusMonths(1).atStartOfDay(ZoneId.systemDefault()).minusMinutes(1).toInstant());
+		final Date start = this.date(now.withDayOfMonth(1).atStartOfDay());
+		final Date end = this.date(now.withDayOfMonth(1).plusMonths(1).atStartOfDay().minusMinutes(1));
 
 		final Season season = this.createSeason(start, end, "season1", "aaa,bbb", org);
 		final Place place1 = this.createPlace("p1", "aaa", org);
@@ -79,61 +78,54 @@ public class BookingRepositoryTest {
 		final Place place2 = this.createPlace("p2", "aaa", org);
 		this.createSeasonPlace(season, place2);
 
-		this.createBooking(Date.from(now.atTime(12, 0).toInstant(ZoneOffset.UTC)),
-				Date.from(now.atTime(13, 0).toInstant(ZoneOffset.UTC)), "ttt", user1, season, place1);
-		this.createBooking(Date.from(now.atTime(13, 0).toInstant(ZoneOffset.UTC)),
-				Date.from(now.atTime(14, 0).toInstant(ZoneOffset.UTC)), "zzz", user1, season, place1);
-		this.createBooking(Date.from(now.atTime(13, 0).toInstant(ZoneOffset.UTC)),
-				Date.from(now.atTime(14, 0).toInstant(ZoneOffset.UTC)), "zzz", user1, season, place2);
-		this.createBooking(Date.from(now.atTime(10, 0).toInstant(ZoneOffset.UTC)),
-				Date.from(now.atTime(11, 0).toInstant(ZoneOffset.UTC)), "zzz", user2, season, place1);
+		this.createBooking(now.atTime(12, 0), now.atTime(13, 0), "ttt", user1, season, place1);
+		this.createBooking(now.atTime(13, 0), now.atTime(14, 0), "zzz", user1, season, place1);
+		this.createBooking(now.atTime(13, 0), now.atTime(14, 0), "zzz", user1, season, place2);
+		this.createBooking(now.atTime(10, 0), now.atTime(11, 0), "zzz", user2, season, place1);
 
 		List<Booking> temp;
 		// search by type (one result)
-		temp = this.bookingRepository.find(Date.from(now.atTime(10, 0).toInstant(ZoneOffset.UTC)),
-				Date.from(now.atTime(14, 0).toInstant(ZoneOffset.UTC)), Arrays.asList("ttt"), null,
-				null);
+		temp = this.bookingRepository.find(this.date(now.atTime(10, 0)), this.date(now.atTime(14, 0)),
+				Arrays.asList("ttt"), null, null);
 		Assert.assertEquals(1, temp.size());
 
 		// search by type (more results)
-		temp = this.bookingRepository.find(Date.from(now.atTime(10, 0).toInstant(ZoneOffset.UTC)),
-				Date.from(now.atTime(14, 0).toInstant(ZoneOffset.UTC)), Arrays.asList("zzz"), null,
-				null);
+		temp = this.bookingRepository.find(this.date(now.atTime(10, 0)), this.date(now.atTime(14, 0)),
+				Arrays.asList("zzz"), null, null);
 		Assert.assertEquals(3, temp.size());
 
 		// search by more types (existing and non-existing)
-		temp = this.bookingRepository.find(Date.from(now.atTime(11, 0).toInstant(ZoneOffset.UTC)),
-				Date.from(now.atTime(14, 0).toInstant(ZoneOffset.UTC)),
+		temp = this.bookingRepository.find(this.date(now.atTime(11, 0)), this.date(now.atTime(14, 0)),
 				Arrays.asList("ttt", "zzz", "yyy"), null, null);
 		Assert.assertEquals(3, temp.size());
 
 		// search by time (no result)
-		temp = this.bookingRepository.find(Date.from(now.atTime(13, 0).toInstant(ZoneOffset.UTC)),
-				Date.from(now.atTime(13, 30).toInstant(ZoneOffset.UTC)),
+		temp = this.bookingRepository.find(this.date(now.atTime(11, 0)), this.date(now.atTime(12, 0)),
 				Arrays.asList("ttt", "zzz", "yyy"), null, null);
 		Assert.assertEquals(0, temp.size());
 
+		// search by time (two incomplete bookings)
+		temp = this.bookingRepository.find(this.date(now.atTime(13, 0)), this.date(now.atTime(13, 30)),
+				Arrays.asList("ttt", "zzz", "yyy"), null, null);
+		Assert.assertEquals(2, temp.size());
+
 		// search by userId
-		temp = this.bookingRepository.find(Date.from(now.atTime(10, 0).toInstant(ZoneOffset.UTC)),
-				Date.from(now.atTime(14, 0).toInstant(ZoneOffset.UTC)),
+		temp = this.bookingRepository.find(this.date(now.atTime(10, 0)), this.date(now.atTime(14, 0)),
 				Arrays.asList("ttt", "zzz", "yyy"), null, user2.getId());
 		Assert.assertEquals(1, temp.size());
 
 		// search by placeId
-		temp = this.bookingRepository.find(Date.from(now.atTime(10, 0).toInstant(ZoneOffset.UTC)),
-				Date.from(now.atTime(14, 0).toInstant(ZoneOffset.UTC)),
+		temp = this.bookingRepository.find(this.date(now.atTime(10, 0)), this.date(now.atTime(14, 0)),
 				Arrays.asList("ttt", "zzz", "yyy"), Arrays.asList(place1.getId()), null);
 		Assert.assertEquals(3, temp.size());
 
 		// search by userId and placeId
-		temp = this.bookingRepository.find(Date.from(now.atTime(10, 0).toInstant(ZoneOffset.UTC)),
-				Date.from(now.atTime(14, 0).toInstant(ZoneOffset.UTC)),
+		temp = this.bookingRepository.find(this.date(now.atTime(10, 0)), this.date(now.atTime(14, 0)),
 				Arrays.asList("ttt", "zzz", "yyy"), Arrays.asList(place1.getId()), user1.getId());
 		Assert.assertEquals(2, temp.size());
 
 		// search by userId and placeId (no result)
-		temp = this.bookingRepository.find(Date.from(now.atTime(10, 0).toInstant(ZoneOffset.UTC)),
-				Date.from(now.atTime(14, 0).toInstant(ZoneOffset.UTC)),
+		temp = this.bookingRepository.find(this.date(now.atTime(10, 0)), this.date(now.atTime(14, 0)),
 				Arrays.asList("ttt", "zzz", "yyy"), Arrays.asList(place2.getId()), user2.getId());
 		Assert.assertEquals(0, temp.size());
 	}
@@ -149,9 +141,8 @@ public class BookingRepositoryTest {
 		this.organizationRepository.save(org);
 
 		final LocalDate now = LocalDate.now();
-		final Date start = Date.from(now.withDayOfMonth(1).atStartOfDay(ZoneId.systemDefault()).toInstant());
-		final Date end = Date.from(
-				now.withDayOfMonth(1).plusMonths(1).atStartOfDay(ZoneId.systemDefault()).minusMinutes(1).toInstant());
+		final Date start = this.date(now.withDayOfMonth(1).atStartOfDay());
+		final Date end = this.date(now.withDayOfMonth(1).plusMonths(1).atStartOfDay().minusMinutes(1));
 
 		final Season season = this.createSeason(start, end, "season1", "aaa,bbb", org);
 		final Place place1 = this.createPlace("p1", "aaa", org);
@@ -159,72 +150,72 @@ public class BookingRepositoryTest {
 		final Place place2 = this.createPlace("p2", "aaa", org);
 		this.createSeasonPlace(season, place2);
 
-		this.createBooking(Date.from(now.atTime(12, 0).toInstant(ZoneOffset.UTC)),
-				Date.from(now.atTime(13, 0).toInstant(ZoneOffset.UTC)), "ttt", user1, season, place1);
-		this.createBooking(Date.from(now.atTime(13, 0).toInstant(ZoneOffset.UTC)),
-				Date.from(now.atTime(14, 0).toInstant(ZoneOffset.UTC)), "zzz", user1, season, place1);
-		this.createBooking(Date.from(now.atTime(13, 0).toInstant(ZoneOffset.UTC)),
-				Date.from(now.atTime(14, 0).toInstant(ZoneOffset.UTC)), "zzz", user1, season, place2);
-		this.createBooking(Date.from(now.atTime(10, 0).toInstant(ZoneOffset.UTC)),
-				Date.from(now.atTime(11, 0).toInstant(ZoneOffset.UTC)), "zzz", user2, season, place1);
+		this.createBooking(now.atTime(12, 0), now.atTime(13, 0), "ttt", user1, season, place1);
+		this.createBooking(now.atTime(13, 0), now.atTime(14, 0), "zzz", user1, season, place1);
+		this.createBooking(now.atTime(13, 0), now.atTime(14, 0), "zzz", user1, season, place2);
+		this.createBooking(now.atTime(10, 0), now.atTime(11, 0), "zzz", user2, season, place1);
 
 		final Booking booking = new Booking();
 		booking.setPlace(place1);
 
-		booking.setTimeStart(Date.from(now.atTime(9, 0).toInstant(ZoneOffset.UTC)));
-		booking.setTimeEnd(Date.from(now.atTime(9, 59).toInstant(ZoneOffset.UTC)));
+		booking.setTimeStart(this.date(now.atTime(9, 0)));
+		booking.setTimeEnd(this.date(now.atTime(9, 59)));
 		Assert.assertTrue(this.bookingRepository.checkFreeTime(booking));
 
-		booking.setTimeStart(Date.from(now.atTime(9, 0).toInstant(ZoneOffset.UTC)));
-		booking.setTimeEnd(Date.from(now.atTime(10, 0).toInstant(ZoneOffset.UTC)));
+		booking.setTimeStart(this.date(now.atTime(9, 0)));
+		booking.setTimeEnd(this.date(now.atTime(10, 0)));
 		Assert.assertTrue(this.bookingRepository.checkFreeTime(booking));
 
-		booking.setTimeStart(Date.from(now.atTime(9, 0).toInstant(ZoneOffset.UTC)));
-		booking.setTimeEnd(Date.from(now.atTime(10, 30).toInstant(ZoneOffset.UTC)));
+		booking.setTimeStart(this.date(now.atTime(9, 0)));
+		booking.setTimeEnd(this.date(now.atTime(10, 30)));
 		Assert.assertFalse(this.bookingRepository.checkFreeTime(booking));
 
-		booking.setTimeStart(Date.from(now.atTime(11, 0).toInstant(ZoneOffset.UTC)));
-		booking.setTimeEnd(Date.from(now.atTime(12, 0).toInstant(ZoneOffset.UTC)));
+		booking.setTimeStart(this.date(now.atTime(11, 0)));
+		booking.setTimeEnd(this.date(now.atTime(12, 0)));
 		Assert.assertTrue(this.bookingRepository.checkFreeTime(booking));
 
-		booking.setTimeStart(Date.from(now.atTime(11, 0).toInstant(ZoneOffset.UTC)));
-		booking.setTimeEnd(Date.from(now.atTime(12, 01).toInstant(ZoneOffset.UTC)));
+		booking.setTimeStart(this.date(now.atTime(11, 0)));
+		booking.setTimeEnd(this.date(now.atTime(12, 01)));
 		Assert.assertFalse(this.bookingRepository.checkFreeTime(booking));
 
-		booking.setTimeStart(Date.from(now.atTime(12, 1).toInstant(ZoneOffset.UTC)));
-		booking.setTimeEnd(Date.from(now.atTime(12, 2).toInstant(ZoneOffset.UTC)));
+		booking.setTimeStart(this.date(now.atTime(12, 1)));
+		booking.setTimeEnd(this.date(now.atTime(12, 2)));
 		Assert.assertFalse(this.bookingRepository.checkFreeTime(booking));
 
-		booking.setTimeStart(Date.from(now.atTime(12, 1).toInstant(ZoneOffset.UTC)));
-		booking.setTimeEnd(Date.from(now.atTime(13, 0).toInstant(ZoneOffset.UTC)));
+		booking.setTimeStart(this.date(now.atTime(12, 1)));
+		booking.setTimeEnd(this.date(now.atTime(13, 0)));
 		Assert.assertFalse(this.bookingRepository.checkFreeTime(booking));
 
-		booking.setTimeStart(Date.from(now.atTime(12, 1).toInstant(ZoneOffset.UTC)));
-		booking.setTimeEnd(Date.from(now.atTime(13, 1).toInstant(ZoneOffset.UTC)));
+		booking.setTimeStart(this.date(now.atTime(12, 1)));
+		booking.setTimeEnd(this.date(now.atTime(13, 1)));
 		Assert.assertFalse(this.bookingRepository.checkFreeTime(booking));
 
-		booking.setTimeStart(Date.from(now.atTime(13, 0).toInstant(ZoneOffset.UTC)));
-		booking.setTimeEnd(Date.from(now.atTime(14, 0).toInstant(ZoneOffset.UTC)));
+		booking.setTimeStart(this.date(now.atTime(13, 0)));
+		booking.setTimeEnd(this.date(now.atTime(14, 0)));
 		Assert.assertFalse(this.bookingRepository.checkFreeTime(booking));
 
-		booking.setTimeStart(Date.from(now.atTime(13, 30).toInstant(ZoneOffset.UTC)));
-		booking.setTimeEnd(Date.from(now.atTime(14, 30).toInstant(ZoneOffset.UTC)));
+		booking.setTimeStart(this.date(now.atTime(13, 30)));
+		booking.setTimeEnd(this.date(now.atTime(14, 30)));
 		Assert.assertFalse(this.bookingRepository.checkFreeTime(booking));
 
-		booking.setTimeStart(Date.from(now.atTime(14, 0).toInstant(ZoneOffset.UTC)));
-		booking.setTimeEnd(Date.from(now.atTime(14, 1).toInstant(ZoneOffset.UTC)));
+		booking.setTimeStart(this.date(now.atTime(14, 0)));
+		booking.setTimeEnd(this.date(now.atTime(14, 1)));
 		Assert.assertTrue(this.bookingRepository.checkFreeTime(booking));
 
-		booking.setTimeStart(Date.from(now.atTime(11, 59).toInstant(ZoneOffset.UTC)));
-		booking.setTimeEnd(Date.from(now.atTime(17, 1).toInstant(ZoneOffset.UTC)));
+		booking.setTimeStart(this.date(now.atTime(11, 59)));
+		booking.setTimeEnd(this.date(now.atTime(17, 1)));
 		Assert.assertFalse(this.bookingRepository.checkFreeTime(booking));
 	}
 
-	private Booking createBooking(final Date start, final Date end, final String type, final User user,
-			final Season season, final Place place) {
+	private Date date(final LocalDateTime ldt) {
+		return Date.from(ldt.atZone(ZoneId.systemDefault()).toInstant());
+	}
+
+	private Booking createBooking(final LocalDateTime start, final LocalDateTime end, final String type,
+			final User user, final Season season, final Place place) {
 		final Booking booking = new Booking();
-		booking.setTimeStart(start);
-		booking.setTimeEnd(end);
+		booking.setTimeStart(this.date(start));
+		booking.setTimeEnd(this.date(end));
 		booking.setType(type);
 		booking.setSeason(season);
 		booking.setCreatedAt(new Date());

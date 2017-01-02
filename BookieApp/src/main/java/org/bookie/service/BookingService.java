@@ -3,6 +3,7 @@ package org.bookie.service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -100,7 +101,7 @@ public class BookingService {
 
 	// TODO: create tests
 	public Set<LocalDate> findFreeTimeSlots(final int duration, final int minutesStart, final int minutesEnd,
-			final Set<LocalDate> days) {
+			final Collection<LocalDate> days) {
 		if (minutesStart < 0 || minutesStart > 24 * 60) {
 			throw new IllegalArgumentException("TimeStart");
 		}
@@ -118,41 +119,54 @@ public class BookingService {
 			final Date end = Date
 					.from(date.atStartOfDay().plusMinutes(minutesEnd).atZone(ZoneId.systemDefault()).toInstant());
 			// get existing bookings which are in desired time frame
-			final List<Booking> bookings = this.bookingRepository
-					.findTimeStartGreaterThanEqualAndTimeEndLessThanEqualOrderByTimeStart(start, end);
+			final List<Booking> bookings = this.bookingRepository.find(start, end, null, null, null);
 
-			// find unique placeIds
-			final List<String> placeIds = bookings.stream().map(b -> b.getPlace().getId()).distinct()
-					.collect(Collectors.toList());
-
-			// for each placeId evaluate if there is free time slot (or until
-			// first match)
-			for (final String pid : placeIds) {
-				// get bookings just for the placeId
-				final List<Booking> bookingsForPlace = bookings.stream().filter(b -> pid.equals(b.getPlace().getId()))
+			if (bookings.isEmpty()) {
+				// there are no booking at this day
+				result.add(date);
+			} else {
+				// find unique placeIds
+				final List<String> placeIds = bookings.stream().map(b -> b.getPlace().getId()).distinct()
 						.collect(Collectors.toList());
 
-				boolean found = false;
-				LocalDateTime timeEnd = date.atStartOfDay().plusMinutes(minutesStart);
-				for (final Booking booking : bookingsForPlace) {
+				// for each placeId evaluate if there is free time slot (or until
+				// first match)
+				for (final String pid : placeIds) {
+					// get bookings just for the placeId
+					final List<Booking> bookingsForPlace = bookings.stream()
+							.filter(b -> pid.equals(b.getPlace().getId()))
+							.collect(Collectors.toList());
+
+					boolean found = false;
+					LocalDateTime timeEnd = date.atStartOfDay().plusMinutes(minutesStart);
+					for (final Booking booking : bookingsForPlace) {
+						timeEnd = timeEnd.plusMinutes(duration);
+						final int expectedEndMinutes = timeEnd.getHour() * 60 + timeEnd.getMinute();
+						if (expectedEndMinutes > minutesEnd || expectedEndMinutes > 24 * 60) {
+							// expected end is after desired end or after midnight
+							break;
+						}
+						final LocalDateTime timeStart = LocalDateTime.ofInstant(booking.getTimeStart().toInstant(),
+								ZoneId.systemDefault());
+						if (timeStart.compareTo(timeEnd) >= 0) {
+							// time slot found
+							found = true;
+							break;
+						}
+						// get end of the booking
+						timeEnd = LocalDateTime.ofInstant(booking.getTimeEnd().toInstant(), ZoneId.systemDefault());
+					}
+
 					timeEnd = timeEnd.plusMinutes(duration);
 					final int expectedEndMinutes = timeEnd.getHour() * 60 + timeEnd.getMinute();
-					if (expectedEndMinutes > minutesEnd || expectedEndMinutes > 24 * 60) {
-						// expected end is after desired end or after midnight
-						break;
-					}
-					final LocalDateTime timeStart = LocalDateTime.ofInstant(booking.getTimeStart().toInstant(),
-							ZoneId.systemDefault());
-					if (timeStart.compareTo(timeEnd) > 0) {
-						// time slot found
+					if (expectedEndMinutes <= minutesEnd) {
+						// time slot found after last booking
 						found = true;
-						break;
 					}
-					// get end of the booking
-					timeEnd = LocalDateTime.ofInstant(booking.getTimeEnd().toInstant(), ZoneId.systemDefault());
-				}
-				if (found) {
-					result.add(date);
+
+					if (found) {
+						result.add(date);
+					}
 				}
 			}
 

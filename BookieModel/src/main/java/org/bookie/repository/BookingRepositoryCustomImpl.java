@@ -30,7 +30,7 @@ public class BookingRepositoryCustomImpl implements BookingRepositoryCustom {
 
 	@Override
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public List<Booking> find(final Date dateStart, final Date dateEnd, final Collection<String> types,
+	public List<Booking> find(final Date timeStart, final Date timeEnd, final Collection<String> types,
 			final Collection<String> placeIds, final String ownerId) {
 
 		final QBooking qBooking = QBooking.booking;
@@ -45,7 +45,15 @@ public class BookingRepositoryCustomImpl implements BookingRepositoryCustom {
 			queryBase = queryBase.innerJoin(qBooking.owner, qUser);
 		}
 
-		QueryBase query = queryBase.where(qBooking.timeStart.goe(dateStart), qBooking.timeEnd.loe(dateEnd));
+		// other start is during booking
+		final BooleanExpression timeStartPredicate = qBooking.timeStart.gt(timeStart)
+				.and(qBooking.timeStart.lt(timeEnd));
+		// other end is during booking
+		final BooleanExpression timeEndPredicate = qBooking.timeEnd.gt(timeStart).and(qBooking.timeEnd.lt(timeEnd));
+		// other start is before and other end is after booking
+		final BooleanExpression wholePredicate = qBooking.timeStart.loe(timeStart).and(qBooking.timeEnd.goe(timeEnd));
+
+		QueryBase query = queryBase.where(timeStartPredicate.or(timeEndPredicate).or(wholePredicate));
 		if (types != null) {
 			query = query.where(qBooking.type.in(types));
 		}
@@ -137,12 +145,4 @@ public class BookingRepositoryCustomImpl implements BookingRepositoryCustom {
 	public void deleteAll() {
 		this.bookingRepository.deleteAll();
 	}
-
-	@Override
-	public List<Booking> findTimeStartGreaterThanEqualAndTimeEndLessThanEqualOrderByTimeStart(final Date timeStart,
-			final Date timeEnd) {
-		return this.bookingRepository.findTimeStartGreaterThanEqualAndTimeEndLessThanEqualOrderByTimeStart(timeStart,
-				timeEnd);
-	}
-
 }

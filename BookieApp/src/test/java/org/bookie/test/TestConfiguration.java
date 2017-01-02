@@ -1,16 +1,13 @@
 package org.bookie.test;
 
-import org.bookie.configuration.DatasourceConfiguration;
-import org.bookie.service.SeasonService;
+import org.bookie.conf.AppConfiguration;
+import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
-@Configuration
+@SpringBootConfiguration
 @EnableAutoConfiguration
-@Import(DatasourceConfiguration.class)
-@ComponentScan(basePackageClasses = SeasonService.class)
+@Import(AppConfiguration.class)
 public class TestConfiguration {
 
 }
