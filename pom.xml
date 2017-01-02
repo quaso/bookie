@@ -19,6 +19,10 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>1.8</java.version>
+
+		<skipJsTests>true</skipJsTests>
+		<emberDevelopmentBuild>false</emberDevelopmentBuild>
+		<emberProductionBuild>true</emberProductionBuild>
 	</properties>
 
 	<dependencyManagement>
@@ -35,5 +39,6 @@
 	<modules>
 		<module>BookieModel</module>
 		<module>BookieApp</module>
+		<module>BookieFrontend</module>
 	</modules>
 </project>
