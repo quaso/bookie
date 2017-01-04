@@ -8,8 +8,14 @@ import javax.persistence.Table;
 @Table(name = "Organization")
 public class Organization extends AbstractEntity {
 
-	@Column(name = "name", nullable = false, length = 255)
+	@Column(name = "name", nullable = false)
 	private String name;
+
+	@Column(name = "phone", nullable = true)
+	private String phone;
+
+	@Column(name = "email", nullable = true)
+	private String email;
 
 	public void setName(final String value) {
 		this.name = value;
@@ -17,6 +23,22 @@ public class Organization extends AbstractEntity {
 
 	public String getName() {
 		return this.name;
+	}
+
+	public String getPhone() {
+		return this.phone;
+	}
+
+	public void setPhone(final String phone) {
+		this.phone = phone;
+	}
+
+	public String getEmail() {
+		return this.email;
+	}
+
+	public void setEmail(final String email) {
+		this.email = email;
 	}
 
 	@Override
