@@ -1,4 +1,4 @@
-package org.bookie.service.test;
+package org.bookie.test.service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -240,9 +240,12 @@ public class BookingServiceTest {
 
 	private User createUser(final String name, final Role role) {
 		final User user = new User();
+		user.setUsername(name);
 		user.setName(name);
 		user.setSurname("surname");
-		user.setRole(role);
+		user.setPhone("123");
+		user.setPassword("pwd");
+		user.getRoles().add(role);
 		this.userRepository.save(user);
 		return user;
 	}

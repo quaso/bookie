@@ -1,4 +1,4 @@
-package org.bookie.service.test;
+package org.bookie.test.service;
 
 import java.time.LocalDate;
 import java.time.ZoneId;

@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 @Configuration
-@Import(DatasourceConfiguration.class)
+@Import({ DatasourceConfiguration.class, SpringWsSecurityConfiguration.class })
 @ComponentScan(basePackageClasses = SeasonService.class)
 public class AppConfiguration {
 

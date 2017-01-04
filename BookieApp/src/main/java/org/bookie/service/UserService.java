@@ -1,11 +1,14 @@
 package org.bookie.service;
 
 import java.util.List;
+import java.util.Optional;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.bookie.exception.UserNotFoundException;
 import org.bookie.model.User;
 import org.bookie.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -15,8 +18,12 @@ public class UserService {
 	@Autowired
 	private UserRepository userRepository;
 
+	@Autowired
+	private PasswordEncoder passwordEncoder;
+
 	public User createUser(final User user) {
 		// TODO: add more here :)
+		user.setPassword(this.passwordEncoder.encode(user.getPassword()));
 		this.userRepository.save(user);
 		return user;
 	}
@@ -36,5 +43,38 @@ public class UserService {
 			throw new UserNotFoundException(user.getId());
 		}
 		this.userRepository.save(user);
+	}
+
+	public void clearToken(final User user) {
+		user.setOneTimeToken(null);
+		this.userRepository.save(user);
+	}
+
+	public String createToken(final User user) {
+		final String token = RandomStringUtils.random(10, 0, 0, true, true);
+		user.setOneTimeToken(this.passwordEncoder.encode(token));
+		user.setFailedLogins(0);
+		this.userRepository.save(user);
+		return token;
+	}
+
+	public Optional<User> findByUsername(final String username) {
+		return this.userRepository.findByUsernameEqualsIgnoreCase(username);
+	}
+
+	public void loginSuccess(final User user) {
+		if (user.getFailedLogins() > 0) {
+			user.setFailedLogins(0);
+			this.userRepository.save(user);
+		}
+	}
+
+	public void loginFail(final String username) {
+		final Optional<User> optionalUser = this.findByUsername(username);
+		if (optionalUser.isPresent()) {
+			final User user = optionalUser.get();
+			user.setFailedLogins(user.getFailedLogins() + 1);
+			this.userRepository.save(user);
+		}
 	}
 }
