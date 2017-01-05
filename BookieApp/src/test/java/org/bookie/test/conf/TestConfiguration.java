@@ -1,4 +1,4 @@
-package org.bookie.test;
+package org.bookie.test.conf;
 
 import org.bookie.conf.AppConfiguration;
 import org.springframework.boot.SpringBootConfiguration;

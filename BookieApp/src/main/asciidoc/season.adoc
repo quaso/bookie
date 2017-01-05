@@ -1,0 +1,55 @@
+= `/season`
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 4
+:sectlinks:
+
+link:index.html[Back to overview]
+
+[[request]]
+= Request structure
+
+[[request-body]]
+== Body
+include::{snippets}/create-season-test/request-fields.adoc[]
+
+[[request-headers]]
+== Headers
+include::{snippets}/create-season-test/request-headers.adoc[]
+
+[[examples]]
+= Examples
+
+[[examples-200]]
+== 200
+
+[[examples-200-request]]
+=== Request
+include::{snippets}/create-season-test/http-request.adoc[]
+
+[[examples-200-curl]]
+==== Curl call
+include::{snippets}/create-season-test/curl-request.adoc[]
+
+[[examples-200-response]]
+=== Response
+include::{snippets}/create-season-test/http-response.adoc[]
+
+[[examples-422]]
+== 422
+Received when the request body does not contain a JSON.
+
+[[examples-422-response]]
+=== Response
+include::{snippets}/i_submit_an_invalid_-j-s-o-n_for_synchronous_processing/http-response.adoc[]
+
+[[examples-500]]
+== 500
+
+[[examples-500-response]]
+=== Response
+include::{snippets}/create-season-test_but_there_is_a_problem_with_the_server/http-response.adoc[]
+
+link:index.html[Back to overview]

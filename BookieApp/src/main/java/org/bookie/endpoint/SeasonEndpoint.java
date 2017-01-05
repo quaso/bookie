@@ -43,7 +43,7 @@ public class SeasonEndpoint {
 				.buildAndExpand(season.getId()).toUri();
 
 		final ResponseEntity<Season> response = new ResponseEntity<>(season, HttpStatus.CREATED);
-		response.getHeaders().setLocation(location);
+		//		response.getHeaders().setLocation(location);
 		return response;
 	}
 

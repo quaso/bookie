@@ -17,7 +17,7 @@ import org.bookie.repository.PlaceRepository;
 import org.bookie.repository.SeasonPlaceRepository;
 import org.bookie.repository.SeasonRepository;
 import org.bookie.service.SeasonService;
-import org.bookie.test.TestConfiguration;
+import org.bookie.test.conf.TestConfiguration;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;

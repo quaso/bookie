@@ -6,7 +6,7 @@ import org.bookie.model.Role;
 import org.bookie.model.User;
 import org.bookie.repository.RoleRepository;
 import org.bookie.service.UserService;
-import org.bookie.test.TestConfiguration;
+import org.bookie.test.conf.TestConfiguration;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

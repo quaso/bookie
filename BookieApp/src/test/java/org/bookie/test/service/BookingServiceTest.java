@@ -28,7 +28,7 @@ import org.bookie.repository.SeasonPlaceRepository;
 import org.bookie.repository.SeasonRepository;
 import org.bookie.service.BookingService;
 import org.bookie.service.UserService;
-import org.bookie.test.TestConfiguration;
+import org.bookie.test.conf.TestConfiguration;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -88,9 +88,8 @@ public class BookingServiceTest {
 		this.user2 = this.createUser("name2", this.createRole("role2"));
 
 		final Date start = Date.from(this.now.withDayOfMonth(1).atStartOfDay(ZoneId.systemDefault()).toInstant());
-		final Date end = Date.from(
-				this.now.withDayOfMonth(1).plusMonths(1).atStartOfDay(ZoneId.systemDefault()).minusMinutes(1)
-						.toInstant());
+		final Date end = Date.from(this.now.withDayOfMonth(1).plusMonths(1).atStartOfDay(ZoneId.systemDefault())
+				.minusMinutes(1).toInstant());
 
 		this.org = new Organization();
 		this.org.setName("org");
@@ -112,11 +111,8 @@ public class BookingServiceTest {
 
 	@Test
 	public void testCreate1() throws NotFreeException {
-		final Booking booking = this.bookingService.createBooking(
-				this.date(this.now.atTime(12, 0)),
-				this.date(this.now.atTime(13, 0)),
-				"aaa",
-				this.user1.getId(), this.t1.getId(), null);
+		final Booking booking = this.bookingService.createBooking(this.date(this.now.atTime(12, 0)),
+				this.date(this.now.atTime(13, 0)), "aaa", this.user1.getId(), this.t1.getId(), null);
 
 		final Booking booking2 = this.bookingRepository.findOne(booking.getId());
 		Assert.assertEquals(this.user1.getId(), booking2.getOwner().getId());
@@ -126,96 +122,66 @@ public class BookingServiceTest {
 
 	@Test(expected = NotFreeException.class)
 	public void testCreateNotFree1() throws NotFreeException {
-		this.bookingService.createBooking(
-				this.date(this.now.atTime(12, 0)),
-				this.date(this.now.atTime(13, 0)),
-				"aaa",
+		this.bookingService.createBooking(this.date(this.now.atTime(12, 0)), this.date(this.now.atTime(13, 0)), "aaa",
 				this.user1.getId(), this.t1.getId(), null);
-		this.bookingService.createBooking(
-				this.date(this.now.atTime(12, 0)),
-				this.date(this.now.atTime(13, 0)),
-				"aaa",
+		this.bookingService.createBooking(this.date(this.now.atTime(12, 0)), this.date(this.now.atTime(13, 0)), "aaa",
 				this.user1.getId(), this.t1.getId(), null);
 	}
 
 	@Test(expected = NotFreeException.class)
 	public void testCreateNotFree2() throws NotFreeException {
-		this.bookingService.createBooking(
-				this.date(this.now.atTime(12, 0)),
-				this.date(this.now.atTime(13, 0)),
-				"aaa",
+		this.bookingService.createBooking(this.date(this.now.atTime(12, 0)), this.date(this.now.atTime(13, 0)), "aaa",
 				this.user1.getId(), this.t1.getId(), null);
-		this.bookingService.createBooking(
-				this.date(this.now.atTime(12, 59)),
-				this.date(this.now.atTime(13, 5)),
-				"aaa",
+		this.bookingService.createBooking(this.date(this.now.atTime(12, 59)), this.date(this.now.atTime(13, 5)), "aaa",
 				this.user1.getId(), this.t1.getId(), null);
 	}
 
 	@Test
 	public void testCreate2() throws NotFreeException {
-		this.bookingService.createBooking(
-				this.date(this.now.atTime(12, 0)),
-				this.date(this.now.atTime(13, 0)),
-				"aaa",
+		this.bookingService.createBooking(this.date(this.now.atTime(12, 0)), this.date(this.now.atTime(13, 0)), "aaa",
 				this.user1.getId(), this.t1.getId(), null);
-		this.bookingService.createBooking(
-				this.date(this.now.atTime(13, 0)),
-				this.date(this.now.atTime(14, 0)),
-				"aaa",
+		this.bookingService.createBooking(this.date(this.now.atTime(13, 0)), this.date(this.now.atTime(14, 0)), "aaa",
 				this.user1.getId(), this.t1.getId(), null);
-		this.bookingService.createBooking(
-				this.date(this.now.atTime(13, 0)),
-				this.date(this.now.atTime(14, 0)),
-				"aaa",
+		this.bookingService.createBooking(this.date(this.now.atTime(13, 0)), this.date(this.now.atTime(14, 0)), "aaa",
 				this.user1.getId(), this.t2.getId(), null);
 	}
 
 	@Test(expected = Exception.class)
 	public void freeTimeSlotIllegalTest1() {
-		Assert.assertEquals(0,
-				this.bookingService.findFreeTimeSlots(this.org.getName(), 15, -10, 12 * 60, Arrays.asList(this.now))
-						.size());
+		Assert.assertEquals(0, this.bookingService
+				.findFreeTimeSlots(this.org.getName(), 15, -10, 12 * 60, Arrays.asList(this.now)).size());
 	}
 
 	@Test(expected = Exception.class)
 	public void freeTimeSlotIllegalTest2() {
-		Assert.assertEquals(0,
-				this.bookingService.findFreeTimeSlots(this.org.getName(), 15, 25 * 60, 12 * 60, Arrays.asList(this.now))
-						.size());
+		Assert.assertEquals(0, this.bookingService
+				.findFreeTimeSlots(this.org.getName(), 15, 25 * 60, 12 * 60, Arrays.asList(this.now)).size());
 	}
 
 	@Test(expected = Exception.class)
 	public void freeTimeSlotIllegalTest3() {
-		Assert.assertEquals(0,
-				this.bookingService
-						.findFreeTimeSlots(this.org.getName(), 15, 11 * 60 + 55, 25 * 60, Arrays.asList(this.now))
-						.size());
+		Assert.assertEquals(0, this.bookingService
+				.findFreeTimeSlots(this.org.getName(), 15, 11 * 60 + 55, 25 * 60, Arrays.asList(this.now)).size());
 	}
 
 	@Test(expected = Exception.class)
 	public void freeTimeSlotIllegalTest4() {
-		Assert.assertEquals(0,
-				this.bookingService
-						.findFreeTimeSlots(this.org.getName(), 15, 11 * 60 + 55, 11 * 60, Arrays.asList(this.now))
-						.size());
+		Assert.assertEquals(0, this.bookingService
+				.findFreeTimeSlots(this.org.getName(), 15, 11 * 60 + 55, 11 * 60, Arrays.asList(this.now)).size());
 	}
 
 	@Test(expected = Exception.class)
 	public void freeTimeSlotIllegalTest5() {
 		// time slot cannot fit
-		Assert.assertEquals(0,
-				this.bookingService
-						.findFreeTimeSlots(this.org.getName(), 15, 11 * 60 + 55, 12 * 60, Arrays.asList(this.now))
-						.size());
+		Assert.assertEquals(0, this.bookingService
+				.findFreeTimeSlots(this.org.getName(), 15, 11 * 60 + 55, 12 * 60, Arrays.asList(this.now)).size());
 	}
 
 	@Test
 	public void freeTimeSlot0DaysTest() {
 		// no dates
-		Assert.assertEquals(0,
-				this.bookingService.findFreeTimeSlots(this.org.getName(), 15, 11 * 60 + 55, 13 * 60, new ArrayList<>())
-						.size());
+		Assert.assertEquals(0, this.bookingService
+				.findFreeTimeSlots(this.org.getName(), 15, 11 * 60 + 55, 13 * 60, new ArrayList<>()).size());
 	}
 
 	@Test
@@ -225,70 +191,47 @@ public class BookingServiceTest {
 		this.createBooking(this.now.atTime(13, 0), this.now.atTime(14, 0), "zzz", this.user1, this.t1);
 
 		final Set<LocalDate> freeTimeSlots = this.bookingService.findFreeTimeSlots(this.org.getName(), 15, 11 * 60 + 55,
-				14 * 60 + 5,
-				Arrays.asList(this.now));
+				14 * 60 + 5, Arrays.asList(this.now));
 		Assert.assertNotNull(freeTimeSlots);
 		Assert.assertEquals(0, freeTimeSlots.size());
 
-		Assert.assertEquals(0,
-				this.bookingService
-						.findFreeTimeSlots(this.org.getName(), 15, 12 * 60 + 55, 13 * 60 + 55, Arrays.asList(this.now))
-						.size());
-		Assert.assertEquals(0,
-				this.bookingService.findFreeTimeSlots(this.org.getName(), 15, 12 * 60, 13 * 60, Arrays.asList(this.now))
-						.size());
+		Assert.assertEquals(0, this.bookingService
+				.findFreeTimeSlots(this.org.getName(), 15, 12 * 60 + 55, 13 * 60 + 55, Arrays.asList(this.now)).size());
+		Assert.assertEquals(0, this.bookingService
+				.findFreeTimeSlots(this.org.getName(), 15, 12 * 60, 13 * 60, Arrays.asList(this.now)).size());
 		// time slot too small to check all bookings
-		Assert.assertEquals(0,
-				this.bookingService
-						.findFreeTimeSlots(this.org.getName(), 15, 12 * 60, 13 * 60 + 10, Arrays.asList(this.now))
-						.size());
+		Assert.assertEquals(0, this.bookingService
+				.findFreeTimeSlots(this.org.getName(), 15, 12 * 60, 13 * 60 + 10, Arrays.asList(this.now)).size());
 		// time slot just enough to check all bookings
-		Assert.assertEquals(0,
-				this.bookingService
-						.findFreeTimeSlots(this.org.getName(), 15, 12 * 60, 13 * 60 + 15, Arrays.asList(this.now))
-						.size());
+		Assert.assertEquals(0, this.bookingService
+				.findFreeTimeSlots(this.org.getName(), 15, 12 * 60, 13 * 60 + 15, Arrays.asList(this.now)).size());
 
 		// free time before bookings
-		Assert.assertEquals(1,
-				this.bookingService
-						.findFreeTimeSlots(this.org.getName(), 15, 11 * 60, 14 * 60 + 5, Arrays.asList(this.now))
-						.size());
-		Assert.assertEquals(1,
-				this.bookingService
-						.findFreeTimeSlots(this.org.getName(), 15, 11 * 60 + 45, 14 * 60 + 5, Arrays.asList(this.now))
-						.size());
+		Assert.assertEquals(1, this.bookingService
+				.findFreeTimeSlots(this.org.getName(), 15, 11 * 60, 14 * 60 + 5, Arrays.asList(this.now)).size());
+		Assert.assertEquals(1, this.bookingService
+				.findFreeTimeSlots(this.org.getName(), 15, 11 * 60 + 45, 14 * 60 + 5, Arrays.asList(this.now)).size());
 		// free time after bookings
-		Assert.assertEquals(1,
-				this.bookingService
-						.findFreeTimeSlots(this.org.getName(), 15, 11 * 60 + 55, 14 * 60 + 15, Arrays.asList(this.now))
-						.size());
-		Assert.assertEquals(1,
-				this.bookingService
-						.findFreeTimeSlots(this.org.getName(), 15, 11 * 60 + 55, 15 * 60, Arrays.asList(this.now))
-						.size());
+		Assert.assertEquals(1, this.bookingService
+				.findFreeTimeSlots(this.org.getName(), 15, 11 * 60 + 55, 14 * 60 + 15, Arrays.asList(this.now)).size());
+		Assert.assertEquals(1, this.bookingService
+				.findFreeTimeSlots(this.org.getName(), 15, 11 * 60 + 55, 15 * 60, Arrays.asList(this.now)).size());
 
 		// two bookings one after the other with some free space
 		this.createBooking(this.now.atTime(12, 0), this.now.atTime(13, 0), "ttt", this.user1, this.t2);
 		this.createBooking(this.now.atTime(13, 30), this.now.atTime(14, 0), "zzz", this.user1, this.t2);
 
-		Assert.assertEquals(1,
-				this.bookingService
-						.findFreeTimeSlots(this.org.getName(), 15, 11 * 60 + 55, 14 * 60 + 5, Arrays.asList(this.now))
-						.size());
-		Assert.assertEquals(1,
-				this.bookingService
-						.findFreeTimeSlots(this.org.getName(), 30, 11 * 60 + 55, 14 * 60 + 5, Arrays.asList(this.now))
-						.size());
-		Assert.assertEquals(0,
-				this.bookingService
-						.findFreeTimeSlots(this.org.getName(), 45, 11 * 60 + 55, 14 * 60 + 5, Arrays.asList(this.now))
-						.size());
+		Assert.assertEquals(1, this.bookingService
+				.findFreeTimeSlots(this.org.getName(), 15, 11 * 60 + 55, 14 * 60 + 5, Arrays.asList(this.now)).size());
+		Assert.assertEquals(1, this.bookingService
+				.findFreeTimeSlots(this.org.getName(), 30, 11 * 60 + 55, 14 * 60 + 5, Arrays.asList(this.now)).size());
+		Assert.assertEquals(0, this.bookingService
+				.findFreeTimeSlots(this.org.getName(), 45, 11 * 60 + 55, 14 * 60 + 5, Arrays.asList(this.now)).size());
 
 		// one booking with large gap
 		this.createBooking(this.now.atTime(10, 0), this.now.atTime(11, 0), "zzz", this.user1, this.t3);
-		Assert.assertEquals(1,
-				this.bookingService.findFreeTimeSlots(this.org.getName(), 90, 9 * 60, 15 * 60, Arrays.asList(this.now))
-						.size());
+		Assert.assertEquals(1, this.bookingService
+				.findFreeTimeSlots(this.org.getName(), 90, 9 * 60, 15 * 60, Arrays.asList(this.now)).size());
 	}
 
 	@Test
@@ -306,26 +249,20 @@ public class BookingServiceTest {
 
 		// search in more days
 		final LocalDate nextDay = this.now.plusDays(1);
-		Assert.assertEquals(1,
-				this.bookingService
-						.findFreeTimeSlots(this.org.getName(), 45, 12 * 60, 14 * 60, Arrays.asList(this.now, nextDay))
-						.size());
-		Assert.assertEquals(2, this.bookingService
-				.findFreeTimeSlots(this.org.getName(), 45, 12 * 60, 14 * 60,
-						Arrays.asList(this.now, nextDay, nextDay.plusDays(1)))
-				.size());
+		Assert.assertEquals(1, this.bookingService
+				.findFreeTimeSlots(this.org.getName(), 45, 12 * 60, 14 * 60, Arrays.asList(this.now, nextDay)).size());
+		Assert.assertEquals(2, this.bookingService.findFreeTimeSlots(this.org.getName(), 45, 12 * 60, 14 * 60,
+				Arrays.asList(this.now, nextDay, nextDay.plusDays(1))).size());
 
 		this.createBooking(nextDay.atTime(12, 0), nextDay.atTime(13, 0), "ttt", this.user1, this.t2);
-		Assert.assertEquals(1,
-				this.bookingService.findFreeTimeSlots(this.org.getName(), 45, 11 * 60 + 55, 14 * 60 + 5,
-						Arrays.asList(this.now, nextDay))
-						.size());
+		Assert.assertEquals(1, this.bookingService
+				.findFreeTimeSlots(this.org.getName(), 45, 11 * 60 + 55, 14 * 60 + 5, Arrays.asList(this.now, nextDay))
+				.size());
 
 		this.createBooking(nextDay.atTime(13, 30), nextDay.atTime(14, 0), "zzz", this.user1, this.t2);
-		Assert.assertEquals(0,
-				this.bookingService.findFreeTimeSlots(this.org.getName(), 45, 11 * 60 + 55, 14 * 60 + 5,
-						Arrays.asList(this.now, nextDay))
-						.size());
+		Assert.assertEquals(0, this.bookingService
+				.findFreeTimeSlots(this.org.getName(), 45, 11 * 60 + 55, 14 * 60 + 5, Arrays.asList(this.now, nextDay))
+				.size());
 	}
 
 	@Test
@@ -337,8 +274,7 @@ public class BookingServiceTest {
 		SecurityContextHolder.getContext().setAuthentication(null);
 
 		final List<? extends TimeSlot> temp = this.bookingService.find(this.org.getName(),
-				this.date(this.now.atTime(10, 0)), this.date(this.now.atTime(14, 0)),
-				Arrays.asList("zzz"), null, null);
+				this.date(this.now.atTime(10, 0)), this.date(this.now.atTime(14, 0)), Arrays.asList("zzz"), null, null);
 		Assert.assertEquals(2, temp.size());
 		Assert.assertNull(((Booking) temp.get(0)).getOwner());
 		Assert.assertNull(((Booking) temp.get(1)).getOwner());
@@ -354,8 +290,7 @@ public class BookingServiceTest {
 				.authenticate(new UsernamePasswordAuthenticationToken(this.user1.getUsername(), USER_PWD)));
 
 		final List<? extends TimeSlot> temp = this.bookingService.find(this.org.getName(),
-				this.date(this.now.atTime(10, 0)), this.date(this.now.atTime(14, 0)),
-				Arrays.asList("zzz"), null, null);
+				this.date(this.now.atTime(10, 0)), this.date(this.now.atTime(14, 0)), Arrays.asList("zzz"), null, null);
 		Assert.assertEquals(2, temp.size());
 		if (((Booking) temp.get(0)).getOwner() != null) {
 			Assert.assertEquals(this.user1.getId(), ((Booking) temp.get(0)).getOwner().getId());
@@ -378,8 +313,7 @@ public class BookingServiceTest {
 				.authenticate(new UsernamePasswordAuthenticationToken(admin.getUsername(), USER_PWD)));
 
 		final List<? extends TimeSlot> temp = this.bookingService.find(this.org.getName(),
-				this.date(this.now.atTime(10, 0)), this.date(this.now.atTime(14, 0)),
-				Arrays.asList("zzz"), null, null);
+				this.date(this.now.atTime(10, 0)), this.date(this.now.atTime(14, 0)), Arrays.asList("zzz"), null, null);
 		Assert.assertEquals(2, temp.size());
 		Assert.assertNotNull(((Booking) temp.get(0)).getOwner());
 		Assert.assertNotNull(((Booking) temp.get(1)).getOwner());
@@ -444,7 +378,7 @@ public class BookingServiceTest {
 		return result;
 	}
 
-	private void createSeasonPlace(@SuppressWarnings("hiding") final Season season, final Place place) {
+	private void createSeasonPlace(final Season season, final Place place) {
 		final SeasonPlace sp = new SeasonPlace();
 		sp.setSeason(season);
 		sp.setPlace(place);

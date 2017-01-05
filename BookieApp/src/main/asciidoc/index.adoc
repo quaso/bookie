@@ -1,0 +1,10 @@
+= Bookie
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:sectlinks:
+
+[[endpoints]]
+= Endpoints
+
+* link:season.html[`/season`] - season management 
