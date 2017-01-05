@@ -14,12 +14,16 @@ import javax.transaction.Transactional;
 
 import org.bookie.exception.NotFreeException;
 import org.bookie.model.Booking;
+import org.bookie.model.OwnerTimeSlot;
 import org.bookie.model.Place;
 import org.bookie.model.Season;
+import org.bookie.model.TimeSlot;
 import org.bookie.model.User;
 import org.bookie.repository.BookingRepositoryCustom;
 import org.bookie.repository.PlaceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -40,6 +44,10 @@ public class BookingService {
 	@Transactional
 	public Booking createBooking(final Date timeStart, final Date timeEnd, final String type, final String ownerId,
 			final String placeId, final String note) throws NotFreeException {
+		final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		if (authentication == null) {
+			throw new IllegalStateException("Only authenicated users may call this");
+		}
 		if (timeStart.after(timeEnd)) {
 			throw new IllegalArgumentException("Start must be before end");
 		}
@@ -57,7 +65,6 @@ public class BookingService {
 			throw new IllegalStateException("Place could not be identified");
 		}
 
-		// TODO: check if organization is loaded
 		final Season season = this.seasonService.getByDate(place.getOrganization().getName(), timeStart);
 		if (season == null) {
 			throw new IllegalStateException("No season is defined for requested booking date");
@@ -70,15 +77,13 @@ public class BookingService {
 		booking.setOwner(owner);
 		booking.setPlace(place);
 		booking.setCreatedAt(new Date());
-		booking.setCreatedBy(owner);
-		// TODO: auditing
-		// booking.setCreatedBy(createdBy);
+		booking.setCreatedBy((User) authentication.getPrincipal());
 		booking.setType(type);
 		booking.setNote(note);
 
 		// check if the datetime is free
 		if (!this.bookingRepository.checkFreeTime(booking)) {
-			throw new NotFreeException();
+			throw new NotFreeException(timeStart, timeEnd, place);
 		}
 		this.bookingRepository.save(booking);
 		return booking;
@@ -86,22 +91,35 @@ public class BookingService {
 
 	public void delete(final String bookingId) {
 		this.bookingRepository.delete(bookingId);
+		//TODO: check and send email to the others about vacant time
 	}
 
-	// public List<Booking> getAll(final Date dateStart, final Date
-	// dateEnd,final String type, final String placeId, final String ownerId){
-	// this.bookingRepository.fi
-	// }
-
-	private boolean checkSameDay(final Date timeStart, final Date timeEnd) {
-		final LocalDate lds = LocalDate.from(timeStart.toInstant());
-		final LocalDate lde = LocalDate.from(timeEnd.toInstant());
-		return lds.equals(lde);
+	public List<? extends OwnerTimeSlot> find(final String organizationName, final Date timeStart, final Date timeEnd,
+			final Collection<String> types, final Collection<String> placeIds, final String ownerId) {
+		final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		boolean admin = false;
+		if (authentication != null) {
+			admin = authentication.getAuthorities().stream()
+					.anyMatch(ga -> ga.getAuthority().equals("ROLE_ADMIN_" + organizationName)
+							|| ga.getAuthority().equals("ROLE_SUPER_ADMIN"));
+		}
+		final Class<? extends OwnerTimeSlot> clazz = admin ? Booking.class : OwnerTimeSlot.class;
+		final List<? extends OwnerTimeSlot> list = this.bookingRepository.find(organizationName, timeStart, timeEnd,
+				types, placeIds, ownerId, clazz);
+		if (!admin) {
+			// remove user info for other owners
+			final String userId = authentication != null ? ((User) authentication.getPrincipal()).getId() : null;
+			list.forEach(ots -> {
+				if (!ots.getOwner().getId().equals(userId)) {
+					ots.setOwner(null);
+				}
+			});
+		}
+		return list;
 	}
 
-	// TODO: create tests
-	public Set<LocalDate> findFreeTimeSlots(final int duration, final int minutesStart, final int minutesEnd,
-			final Collection<LocalDate> days) {
+	public Set<LocalDate> findFreeTimeSlots(final String organizationName, final int duration, final int minutesStart,
+			final int minutesEnd, final Collection<LocalDate> days) {
 		if (minutesStart < 0 || minutesStart > 24 * 60) {
 			throw new IllegalArgumentException("TimeStart");
 		}
@@ -119,34 +137,36 @@ public class BookingService {
 			final Date end = Date
 					.from(date.atStartOfDay().plusMinutes(minutesEnd).atZone(ZoneId.systemDefault()).toInstant());
 			// get existing bookings which are in desired time frame
-			final List<Booking> bookings = this.bookingRepository.find(start, end, null, null, null);
+			final List<TimeSlot> timeSlots = this.bookingRepository.find(organizationName, start, end, null, null, null,
+					TimeSlot.class);
 
-			if (bookings.isEmpty()) {
+			if (timeSlots.isEmpty()) {
 				// there are no booking at this day
 				result.add(date);
 			} else {
 				// find unique placeIds
-				final List<String> placeIds = bookings.stream().map(b -> b.getPlace().getId()).distinct()
+				final List<String> placeIds = timeSlots.stream().map(b -> b.getPlace().getId()).distinct()
 						.collect(Collectors.toList());
 
 				// for each placeId evaluate if there is free time slot (or until
 				// first match)
 				for (final String pid : placeIds) {
 					// get bookings just for the placeId
-					final List<Booking> bookingsForPlace = bookings.stream()
+					final List<TimeSlot> timeSlotsForPlace = timeSlots.stream()
 							.filter(b -> pid.equals(b.getPlace().getId()))
 							.collect(Collectors.toList());
 
 					boolean found = false;
 					LocalDateTime timeEnd = date.atStartOfDay().plusMinutes(minutesStart);
-					for (final Booking booking : bookingsForPlace) {
+					for (final TimeSlot timeSlot : timeSlotsForPlace) {
 						timeEnd = timeEnd.plusMinutes(duration);
 						final int expectedEndMinutes = timeEnd.getHour() * 60 + timeEnd.getMinute();
 						if (expectedEndMinutes > minutesEnd || expectedEndMinutes > 24 * 60) {
 							// expected end is after desired end or after midnight
+							// this method has no test coverage although there is a test case for it :) Thanks to JVM optimization :(
 							break;
 						}
-						final LocalDateTime timeStart = LocalDateTime.ofInstant(booking.getTimeStart().toInstant(),
+						final LocalDateTime timeStart = LocalDateTime.ofInstant(timeSlot.getTimeStart().toInstant(),
 								ZoneId.systemDefault());
 						if (timeStart.compareTo(timeEnd) >= 0) {
 							// time slot found
@@ -154,7 +174,7 @@ public class BookingService {
 							break;
 						}
 						// get end of the booking
-						timeEnd = LocalDateTime.ofInstant(booking.getTimeEnd().toInstant(), ZoneId.systemDefault());
+						timeEnd = LocalDateTime.ofInstant(timeSlot.getTimeEnd().toInstant(), ZoneId.systemDefault());
 					}
 
 					timeEnd = timeEnd.plusMinutes(duration);
@@ -172,5 +192,11 @@ public class BookingService {
 
 		}
 		return result;
+	}
+
+	private boolean checkSameDay(final Date timeStart, final Date timeEnd) {
+		final LocalDate lds = timeStart.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+		final LocalDate lde = timeEnd.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+		return lds.equals(lde);
 	}
 }

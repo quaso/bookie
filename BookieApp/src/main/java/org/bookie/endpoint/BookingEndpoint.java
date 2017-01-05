@@ -15,6 +15,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -29,8 +31,9 @@ public class BookingEndpoint {
 	@Autowired
 	private BookingService bookingService;
 
-	@RequestMapping(method = RequestMethod.POST, value = "/")
-	public ResponseEntity<?> createBooking(final BookingEx booking) throws NotFreeException {
+	@RequestMapping(method = RequestMethod.POST, value = "/{organizationName}")
+	public ResponseEntity<?> createBooking(final @PathVariable String organizationName,
+			final @RequestBody BookingEx booking) throws NotFreeException {
 		final Booking result = this.bookingService.createBooking(booking.getTimeStart(), booking.getTimeEnd(),
 				booking.getType(), booking.getOwnerId(), booking.getPlaceId(), booking.getNote());
 
@@ -42,10 +45,11 @@ public class BookingEndpoint {
 		return response;
 	}
 
-	@RequestMapping(method = RequestMethod.GET, value = "/findFree/")
-	public Set<LocalDate> findFreeTimeSlots(@RequestParam final int duration, @RequestParam final int timeStart,
+	@RequestMapping(method = RequestMethod.GET, value = "/findFree/{organizationName}")
+	public Set<LocalDate> findFreeTimeSlots(final @PathVariable String organizationName,
+			@RequestParam final int duration, @RequestParam final int timeStart,
 			@RequestParam final int timeEnd, @RequestParam final Set<LocalDate> days) {
-		return this.bookingService.findFreeTimeSlots(duration, timeStart, timeEnd, days);
+		return this.bookingService.findFreeTimeSlots(organizationName, duration, timeStart, timeEnd, days);
 	}
 
 	@RequestMapping(method = RequestMethod.DELETE, value = "/")

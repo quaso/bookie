@@ -11,10 +11,12 @@ import javax.transaction.Transactional;
 
 import org.bookie.model.Booking;
 import org.bookie.model.Organization;
+import org.bookie.model.OwnerTimeSlot;
 import org.bookie.model.Place;
 import org.bookie.model.Role;
 import org.bookie.model.Season;
 import org.bookie.model.SeasonPlace;
+import org.bookie.model.TimeSlot;
 import org.bookie.model.User;
 import org.bookie.repository.BookingRepositoryCustom;
 import org.bookie.repository.OrganizationRepository;
@@ -24,11 +26,11 @@ import org.bookie.repository.SeasonPlaceRepository;
 import org.bookie.repository.SeasonRepository;
 import org.bookie.repository.UserRepository;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -36,7 +38,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 @SpringBootTest(classes = MainTestConfiguration.class)
 @ActiveProfiles("test")
 @Transactional
-@Rollback(false)
 public class BookingRepositoryTest {
 
 	@Autowired
@@ -60,152 +61,247 @@ public class BookingRepositoryTest {
 	@Autowired
 	private OrganizationRepository organizationRepository;
 
-	@Test
-	public void testFind() {
+	private final LocalDate now = LocalDate.now();
+	private Organization org;
+	private User user1, user2;
+	private Place place1, place2;
+
+	@Before
+	public void init() {
 		final Role role = this.createRole("role");
-		final User user1 = this.createUser("name1", role);
-		final User user2 = this.createUser("name2", role);
+		this.user1 = this.createUser("name1", role);
+		this.user2 = this.createUser("name2", role);
 
-		final Organization org = new Organization();
-		org.setName("org");
-		this.organizationRepository.save(org);
+		this.org = new Organization();
+		this.org.setName("org");
+		this.organizationRepository.save(this.org);
 
-		final LocalDate now = LocalDate.now();
-		final Date start = this.date(now.withDayOfMonth(1).atStartOfDay());
-		final Date end = this.date(now.withDayOfMonth(1).plusMonths(1).atStartOfDay().minusMinutes(1));
+		final Date start = this.date(this.now.withDayOfMonth(1).atStartOfDay());
+		final Date end = this.date(this.now.withDayOfMonth(1).plusMonths(1).atStartOfDay().minusMinutes(1));
 
-		final Season season = this.createSeason(start, end, "season1", "aaa,bbb", org);
-		final Place place1 = this.createPlace("p1", "aaa", org);
-		this.createSeasonPlace(season, place1);
-		final Place place2 = this.createPlace("p2", "aaa", org);
-		this.createSeasonPlace(season, place2);
+		final Season season = this.createSeason(start, end, "season1", "aaa,bbb", this.org);
+		this.place1 = this.createPlace("p1", "aaa", this.org);
+		this.createSeasonPlace(season, this.place1);
+		this.place2 = this.createPlace("p2", "aaa", this.org);
+		this.createSeasonPlace(season, this.place2);
 
-		this.createBooking(now.atTime(12, 0), now.atTime(13, 0), "ttt", user1, season, place1);
-		this.createBooking(now.atTime(13, 0), now.atTime(14, 0), "zzz", user1, season, place1);
-		this.createBooking(now.atTime(13, 0), now.atTime(14, 0), "zzz", user1, season, place2);
-		this.createBooking(now.atTime(10, 0), now.atTime(11, 0), "zzz", user2, season, place1);
+		this.createBooking(this.now.atTime(12, 0), this.now.atTime(13, 0), "ttt", this.user1, season, this.place1);
+		this.createBooking(this.now.atTime(13, 0), this.now.atTime(14, 0), "zzz", this.user1, season, this.place1);
+		this.createBooking(this.now.atTime(13, 0), this.now.atTime(14, 0), "zzz", this.user1, season, this.place2);
+		this.createBooking(this.now.atTime(10, 0), this.now.atTime(11, 0), "zzz", this.user2, season, this.place1);
+	}
 
-		List<Booking> temp;
-		// search by type (one result)
-		temp = this.bookingRepository.find(this.date(now.atTime(10, 0)), this.date(now.atTime(14, 0)),
-				Arrays.asList("ttt"), null, null);
+	@Test
+	public void testFindOneTimeSlot() {
+		// search by type (one result) timeslot only
+		final List<? extends TimeSlot> temp = this.bookingRepository.find(this.org.getName(),
+				this.date(this.now.atTime(10, 0)), this.date(this.now.atTime(14, 0)),
+				Arrays.asList("ttt"), null, null, TimeSlot.class);
 		Assert.assertEquals(1, temp.size());
+		Assert.assertNull(((Booking) temp.get(0)).getOwner());
+	}
 
+	@Test
+	public void testFindOneOwnerTimeSlot() {
+		// search by type (one result) timeslot only
+		final List<? extends TimeSlot> temp = this.bookingRepository.find(this.org.getName(),
+				this.date(this.now.atTime(10, 0)), this.date(this.now.atTime(14, 0)),
+				Arrays.asList("ttt"), null, null, OwnerTimeSlot.class);
+		Assert.assertEquals(1, temp.size());
+		Assert.assertNotNull(((Booking) temp.get(0)).getOwner());
+		Assert.assertNull(((Booking) temp.get(0)).getType());
+	}
+
+	@Test
+	public void testFindOneBooking() {
+		// search by type (one result) whole booking
+		final List<? extends TimeSlot> temp = this.bookingRepository.find(this.org.getName(),
+				this.date(this.now.atTime(10, 0)), this.date(this.now.atTime(14, 0)),
+				Arrays.asList("ttt"), null, null, Booking.class);
+		Assert.assertEquals(1, temp.size());
+		Assert.assertNotNull(((Booking) temp.get(0)).getOwner());
+		Assert.assertNotNull(((Booking) temp.get(0)).getType());
+	}
+
+	@Test
+	public void testFindMore() {
 		// search by type (more results)
-		temp = this.bookingRepository.find(this.date(now.atTime(10, 0)), this.date(now.atTime(14, 0)),
-				Arrays.asList("zzz"), null, null);
+		final List<? extends TimeSlot> temp = this.bookingRepository.find(this.org.getName(),
+				this.date(this.now.atTime(10, 0)), this.date(this.now.atTime(14, 0)),
+				Arrays.asList("zzz"), null, null, TimeSlot.class);
 		Assert.assertEquals(3, temp.size());
+	}
 
+	@Test
+	public void testFindMore2() {
 		// search by more types (existing and non-existing)
-		temp = this.bookingRepository.find(this.date(now.atTime(11, 0)), this.date(now.atTime(14, 0)),
-				Arrays.asList("ttt", "zzz", "yyy"), null, null);
+		final List<? extends TimeSlot> temp = this.bookingRepository.find(this.org.getName(),
+				this.date(this.now.atTime(11, 0)), this.date(this.now.atTime(14, 0)),
+				Arrays.asList("ttt", "zzz", "yyy"), null, null, TimeSlot.class);
 		Assert.assertEquals(3, temp.size());
+	}
 
+	@Test
+	public void testFindEmpty() {
 		// search by time (no result)
-		temp = this.bookingRepository.find(this.date(now.atTime(11, 0)), this.date(now.atTime(12, 0)),
-				Arrays.asList("ttt", "zzz", "yyy"), null, null);
-		Assert.assertEquals(0, temp.size());
-
-		// search by time (two incomplete bookings)
-		temp = this.bookingRepository.find(this.date(now.atTime(13, 0)), this.date(now.atTime(13, 30)),
-				Arrays.asList("ttt", "zzz", "yyy"), null, null);
-		Assert.assertEquals(2, temp.size());
-
-		// search by userId
-		temp = this.bookingRepository.find(this.date(now.atTime(10, 0)), this.date(now.atTime(14, 0)),
-				Arrays.asList("ttt", "zzz", "yyy"), null, user2.getId());
-		Assert.assertEquals(1, temp.size());
-
-		// search by placeId
-		temp = this.bookingRepository.find(this.date(now.atTime(10, 0)), this.date(now.atTime(14, 0)),
-				Arrays.asList("ttt", "zzz", "yyy"), Arrays.asList(place1.getId()), null);
-		Assert.assertEquals(3, temp.size());
-
-		// search by userId and placeId
-		temp = this.bookingRepository.find(this.date(now.atTime(10, 0)), this.date(now.atTime(14, 0)),
-				Arrays.asList("ttt", "zzz", "yyy"), Arrays.asList(place1.getId()), user1.getId());
-		Assert.assertEquals(2, temp.size());
-
-		// search by userId and placeId (no result)
-		temp = this.bookingRepository.find(this.date(now.atTime(10, 0)), this.date(now.atTime(14, 0)),
-				Arrays.asList("ttt", "zzz", "yyy"), Arrays.asList(place2.getId()), user2.getId());
+		final List<? extends TimeSlot> temp = this.bookingRepository.find(this.org.getName(),
+				this.date(this.now.atTime(11, 0)), this.date(this.now.atTime(12, 0)),
+				Arrays.asList("ttt", "zzz", "yyy"), null, null, TimeSlot.class);
 		Assert.assertEquals(0, temp.size());
 	}
 
-	//	@Test
-	public void testFree() {
-		final Role role = this.createRole("role");
-		final User user1 = this.createUser("name1", role);
-		final User user2 = this.createUser("name2", role);
+	@Test
+	public void testFindMiddle() {
+		// search by time (two incomplete bookings)
+		final List<? extends TimeSlot> temp = this.bookingRepository.find(this.org.getName(),
+				this.date(this.now.atTime(13, 0)), this.date(this.now.atTime(13, 30)),
+				Arrays.asList("ttt", "zzz", "yyy"), null, null, TimeSlot.class);
+		Assert.assertEquals(2, temp.size());
+	}
 
-		final Organization org = new Organization();
-		org.setName("org");
-		this.organizationRepository.save(org);
+	@Test
+	public void testFindUserId() {
+		// search by userId
+		final List<? extends TimeSlot> temp = this.bookingRepository.find(this.org.getName(),
+				this.date(this.now.atTime(10, 0)), this.date(this.now.atTime(14, 0)),
+				Arrays.asList("ttt", "zzz", "yyy"), null, this.user2.getId(), TimeSlot.class);
+		Assert.assertEquals(1, temp.size());
+	}
 
-		final LocalDate now = LocalDate.now();
-		final Date start = this.date(now.withDayOfMonth(1).atStartOfDay());
-		final Date end = this.date(now.withDayOfMonth(1).plusMonths(1).atStartOfDay().minusMinutes(1));
+	@Test
+	public void testFindPlaceId() {
+		// search by placeId
+		final List<? extends TimeSlot> temp = this.bookingRepository.find(this.org.getName(),
+				this.date(this.now.atTime(10, 0)), this.date(this.now.atTime(14, 0)),
+				Arrays.asList("ttt", "zzz", "yyy"), Arrays.asList(this.place1.getId()), null, TimeSlot.class);
+		Assert.assertEquals(3, temp.size());
+	}
 
-		final Season season = this.createSeason(start, end, "season1", "aaa,bbb", org);
-		final Place place1 = this.createPlace("p1", "aaa", org);
-		this.createSeasonPlace(season, place1);
-		final Place place2 = this.createPlace("p2", "aaa", org);
-		this.createSeasonPlace(season, place2);
+	@Test
+	public void testFindUserIdPlaceId() {
+		// search by userId and placeId
+		final List<? extends TimeSlot> temp = this.bookingRepository.find(this.org.getName(),
+				this.date(this.now.atTime(10, 0)), this.date(this.now.atTime(14, 0)),
+				Arrays.asList("ttt", "zzz", "yyy"), Arrays.asList(this.place1.getId()), this.user1.getId(),
+				TimeSlot.class);
+		Assert.assertEquals(2, temp.size());
+	}
 
-		this.createBooking(now.atTime(12, 0), now.atTime(13, 0), "ttt", user1, season, place1);
-		this.createBooking(now.atTime(13, 0), now.atTime(14, 0), "zzz", user1, season, place1);
-		this.createBooking(now.atTime(13, 0), now.atTime(14, 0), "zzz", user1, season, place2);
-		this.createBooking(now.atTime(10, 0), now.atTime(11, 0), "zzz", user2, season, place1);
+	@Test
+	public void testFindEmptyUserIdPlaceId() {
+		// search by userId and placeId (no result)
+		final List<? extends TimeSlot> temp = this.bookingRepository.find(this.org.getName(),
+				this.date(this.now.atTime(10, 0)), this.date(this.now.atTime(14, 0)),
+				Arrays.asList("ttt", "zzz", "yyy"), Arrays.asList(this.place2.getId()), this.user2.getId(),
+				TimeSlot.class);
+		Assert.assertEquals(0, temp.size());
+	}
 
+	@Test
+	public void testFree1() {
 		final Booking booking = new Booking();
-		booking.setPlace(place1);
-
-		booking.setTimeStart(this.date(now.atTime(9, 0)));
-		booking.setTimeEnd(this.date(now.atTime(9, 59)));
+		booking.setPlace(this.place1);
+		booking.setTimeStart(this.date(this.now.atTime(9, 0)));
+		booking.setTimeEnd(this.date(this.now.atTime(9, 59)));
 		Assert.assertTrue(this.bookingRepository.checkFreeTime(booking));
+	}
 
-		booking.setTimeStart(this.date(now.atTime(9, 0)));
-		booking.setTimeEnd(this.date(now.atTime(10, 0)));
+	@Test
+	public void testFree2() {
+		final Booking booking = new Booking();
+		booking.setPlace(this.place1);
+		booking.setTimeStart(this.date(this.now.atTime(9, 0)));
+		booking.setTimeEnd(this.date(this.now.atTime(10, 0)));
 		Assert.assertTrue(this.bookingRepository.checkFreeTime(booking));
+	}
 
-		booking.setTimeStart(this.date(now.atTime(9, 0)));
-		booking.setTimeEnd(this.date(now.atTime(10, 30)));
+	@Test
+	public void testFree3() {
+		final Booking booking = new Booking();
+		booking.setPlace(this.place1);
+		booking.setTimeStart(this.date(this.now.atTime(9, 0)));
+		booking.setTimeEnd(this.date(this.now.atTime(10, 30)));
 		Assert.assertFalse(this.bookingRepository.checkFreeTime(booking));
+	}
 
-		booking.setTimeStart(this.date(now.atTime(11, 0)));
-		booking.setTimeEnd(this.date(now.atTime(12, 0)));
+	@Test
+	public void testFree4() {
+		final Booking booking = new Booking();
+		booking.setPlace(this.place1);
+		booking.setTimeStart(this.date(this.now.atTime(11, 0)));
+		booking.setTimeEnd(this.date(this.now.atTime(12, 0)));
 		Assert.assertTrue(this.bookingRepository.checkFreeTime(booking));
+	}
 
-		booking.setTimeStart(this.date(now.atTime(11, 0)));
-		booking.setTimeEnd(this.date(now.atTime(12, 01)));
+	@Test
+	public void testFree5() {
+		final Booking booking = new Booking();
+		booking.setPlace(this.place1);
+		booking.setTimeStart(this.date(this.now.atTime(11, 0)));
+		booking.setTimeEnd(this.date(this.now.atTime(12, 01)));
 		Assert.assertFalse(this.bookingRepository.checkFreeTime(booking));
+	}
 
-		booking.setTimeStart(this.date(now.atTime(12, 1)));
-		booking.setTimeEnd(this.date(now.atTime(12, 2)));
+	@Test
+	public void testFree6() {
+		final Booking booking = new Booking();
+		booking.setPlace(this.place1);
+		booking.setTimeStart(this.date(this.now.atTime(12, 1)));
+		booking.setTimeEnd(this.date(this.now.atTime(12, 2)));
 		Assert.assertFalse(this.bookingRepository.checkFreeTime(booking));
+	}
 
-		booking.setTimeStart(this.date(now.atTime(12, 1)));
-		booking.setTimeEnd(this.date(now.atTime(13, 0)));
+	@Test
+	public void testFree7() {
+		final Booking booking = new Booking();
+		booking.setPlace(this.place1);
+		booking.setTimeStart(this.date(this.now.atTime(12, 1)));
+		booking.setTimeEnd(this.date(this.now.atTime(13, 0)));
 		Assert.assertFalse(this.bookingRepository.checkFreeTime(booking));
+	}
 
-		booking.setTimeStart(this.date(now.atTime(12, 1)));
-		booking.setTimeEnd(this.date(now.atTime(13, 1)));
+	@Test
+	public void testFree8() {
+		final Booking booking = new Booking();
+		booking.setPlace(this.place1);
+		booking.setTimeStart(this.date(this.now.atTime(12, 1)));
+		booking.setTimeEnd(this.date(this.now.atTime(13, 1)));
 		Assert.assertFalse(this.bookingRepository.checkFreeTime(booking));
+	}
 
-		booking.setTimeStart(this.date(now.atTime(13, 0)));
-		booking.setTimeEnd(this.date(now.atTime(14, 0)));
+	@Test
+	public void testFree9() {
+		final Booking booking = new Booking();
+		booking.setPlace(this.place1);
+		booking.setTimeStart(this.date(this.now.atTime(13, 0)));
+		booking.setTimeEnd(this.date(this.now.atTime(14, 0)));
 		Assert.assertFalse(this.bookingRepository.checkFreeTime(booking));
+	}
 
-		booking.setTimeStart(this.date(now.atTime(13, 30)));
-		booking.setTimeEnd(this.date(now.atTime(14, 30)));
+	@Test
+	public void testFree10() {
+		final Booking booking = new Booking();
+		booking.setPlace(this.place1);
+		booking.setTimeStart(this.date(this.now.atTime(13, 30)));
+		booking.setTimeEnd(this.date(this.now.atTime(14, 30)));
 		Assert.assertFalse(this.bookingRepository.checkFreeTime(booking));
+	}
 
-		booking.setTimeStart(this.date(now.atTime(14, 0)));
-		booking.setTimeEnd(this.date(now.atTime(14, 1)));
+	@Test
+	public void testFree11() {
+		final Booking booking = new Booking();
+		booking.setPlace(this.place1);
+		booking.setTimeStart(this.date(this.now.atTime(14, 0)));
+		booking.setTimeEnd(this.date(this.now.atTime(14, 1)));
 		Assert.assertTrue(this.bookingRepository.checkFreeTime(booking));
+	}
 
-		booking.setTimeStart(this.date(now.atTime(11, 59)));
-		booking.setTimeEnd(this.date(now.atTime(17, 1)));
+	@Test
+	public void testFree12() {
+		final Booking booking = new Booking();
+		booking.setPlace(this.place1);
+		booking.setTimeStart(this.date(this.now.atTime(11, 59)));
+		booking.setTimeEnd(this.date(this.now.atTime(17, 1)));
 		Assert.assertFalse(this.bookingRepository.checkFreeTime(booking));
 	}
 

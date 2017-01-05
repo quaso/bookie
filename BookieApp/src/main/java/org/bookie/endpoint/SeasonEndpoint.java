@@ -29,7 +29,8 @@ public class SeasonEndpoint {
 	private OrganizationService organizationService;
 
 	@RequestMapping(method = RequestMethod.POST, value = "/{organizationName}")
-	public ResponseEntity<?> createSeason(final String organizationName, @RequestBody final Season season) {
+	public ResponseEntity<?> createSeason(final @PathVariable String organizationName,
+			@RequestBody final Season season) {
 		final Organization org = this.organizationService.findByName(organizationName);
 		if (org == null) {
 			throw new IllegalStateException("Organization could not be found");
@@ -46,7 +47,7 @@ public class SeasonEndpoint {
 	}
 
 	@RequestMapping(method = RequestMethod.GET, value = "/{organizationName}")
-	public SeasonDetails getCurrent(final String organizationName) {
+	public SeasonDetails getCurrent(final @PathVariable String organizationName) {
 		return this.seasonService.getDetailsCurrent(organizationName);
 	}
 

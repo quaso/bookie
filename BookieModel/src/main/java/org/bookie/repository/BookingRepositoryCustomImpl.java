@@ -9,13 +9,17 @@ import javax.persistence.LockModeType;
 import javax.persistence.PersistenceContext;
 
 import org.bookie.model.Booking;
+import org.bookie.model.OwnerTimeSlot;
 import org.bookie.model.QBooking;
+import org.bookie.model.QOrganization;
 import org.bookie.model.QPlace;
 import org.bookie.model.QUser;
+import org.bookie.model.TimeSlot;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.querydsl.core.support.FetchableQueryBase;
 import com.querydsl.core.support.QueryBase;
+import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPAQueryBase;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -30,16 +34,29 @@ public class BookingRepositoryCustomImpl implements BookingRepositoryCustom {
 
 	@Override
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public List<Booking> find(final Date timeStart, final Date timeEnd, final Collection<String> types,
-			final Collection<String> placeIds, final String ownerId) {
+	public <T extends TimeSlot> List<T> find(final String organizationName, final Date timeStart, final Date timeEnd,
+			final Collection<String> types, final Collection<String> placeIds, final String ownerId,
+			final Class<T> clazz) {
 
 		final QBooking qBooking = QBooking.booking;
+		final QOrganization qOrganization = QOrganization.organization;
 		final QPlace qPlace = QPlace.place;
 		final QUser qUser = QUser.user;
 
-		JPAQueryBase queryBase = new JPAQuery(this.em).from(qBooking);
+		JPAQueryBase queryBase = new JPAQuery(this.em);
+		if (clazz.equals(TimeSlot.class)) {
+			queryBase = (JPAQueryBase) queryBase.select(
+					Projections.fields(Booking.class, qBooking.timeStart, qBooking.timeEnd, qBooking.place));
+		} else if (clazz.equals(OwnerTimeSlot.class)) {
+			queryBase = (JPAQueryBase) queryBase.select(
+					Projections.fields(Booking.class, qBooking.timeStart, qBooking.timeEnd, qBooking.place,
+							qBooking.owner));
+		}
+		queryBase = queryBase.from(qBooking);
 		if (placeIds != null) {
 			queryBase = queryBase.innerJoin(qBooking.place, qPlace);
+		} else {
+			queryBase = queryBase.innerJoin(qBooking.place.organization, qOrganization);
 		}
 		if (ownerId != null) {
 			queryBase = queryBase.innerJoin(qBooking.owner, qUser);
@@ -59,6 +76,8 @@ public class BookingRepositoryCustomImpl implements BookingRepositoryCustom {
 		}
 		if (placeIds != null) {
 			query = query.where(qPlace.id.in(placeIds));
+		} else {
+			query = query.where(qOrganization.name.eq(organizationName));
 		}
 		if (ownerId != null) {
 			query = query.where(qUser.id.eq(ownerId));

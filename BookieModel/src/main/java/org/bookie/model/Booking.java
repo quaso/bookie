@@ -11,11 +11,12 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.Proxy;
+import org.springframework.data.annotation.CreatedDate;
 
 @Entity
 @Proxy(lazy = false)
 @Table(name = "Booking")
-public class Booking extends AbstractEntity {
+public class Booking extends AbstractEntity implements OwnerTimeSlot {
 
 	@Column(name = "timeStart", nullable = false)
 	private Date timeStart;
@@ -29,6 +30,7 @@ public class Booking extends AbstractEntity {
 	@Column(name = "note", nullable = true, length = 255)
 	private String note;
 
+	@CreatedDate
 	@Column(name = "createdAt", nullable = false)
 	private Date createdAt;
 
@@ -56,7 +58,11 @@ public class Booking extends AbstractEntity {
 	@org.hibernate.annotations.Cascade({ org.hibernate.annotations.CascadeType.LOCK })
 	@JoinColumns({ @JoinColumn(name = "owner", referencedColumnName = "id", nullable = false) })
 	private User owner;
+	//
+	//	@Column(name = "ownerId", nullable = false)
+	//	private String ownerId;
 
+	@Override
 	public Date getTimeStart() {
 		return this.timeStart;
 	}
@@ -65,6 +71,7 @@ public class Booking extends AbstractEntity {
 		this.timeStart = timeStart;
 	}
 
+	@Override
 	public Date getTimeEnd() {
 		return this.timeEnd;
 	}
@@ -121,6 +128,7 @@ public class Booking extends AbstractEntity {
 		this.season = season;
 	}
 
+	@Override
 	public Place getPlace() {
 		return this.place;
 	}
@@ -129,10 +137,12 @@ public class Booking extends AbstractEntity {
 		this.place = place;
 	}
 
+	@Override
 	public User getOwner() {
 		return this.owner;
 	}
 
+	@Override
 	public void setOwner(final User owner) {
 		this.owner = owner;
 	}
@@ -193,5 +203,4 @@ public class Booking extends AbstractEntity {
 		builder.append("]");
 		return builder.toString();
 	}
-
 }
