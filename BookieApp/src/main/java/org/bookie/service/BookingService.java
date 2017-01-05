@@ -27,6 +27,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 @Service
+@Transactional
 public class BookingService {
 
 	@Autowired
@@ -41,7 +42,6 @@ public class BookingService {
 	@Autowired
 	private SeasonService seasonService;
 
-	@Transactional
 	public Booking createBooking(final Date timeStart, final Date timeEnd, final String type, final String ownerId,
 			final String placeId, final String note) throws NotFreeException {
 		final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

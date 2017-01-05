@@ -2,6 +2,8 @@ package org.bookie.service;
 
 import java.util.Date;
 
+import javax.transaction.Transactional;
+
 import org.bookie.model.PlacesInfo;
 import org.bookie.model.Season;
 import org.bookie.model.SeasonDetails;
@@ -11,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
+@Transactional
 public class SeasonService {
 
 	@Autowired

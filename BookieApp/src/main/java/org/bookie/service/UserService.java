@@ -3,6 +3,8 @@ package org.bookie.service;
 import java.util.List;
 import java.util.Optional;
 
+import javax.transaction.Transactional;
+
 import org.apache.commons.lang3.RandomStringUtils;
 import org.bookie.exception.UserNotFoundException;
 import org.bookie.model.User;
@@ -13,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 @Service
+@Transactional
 public class UserService {
 
 	@Autowired

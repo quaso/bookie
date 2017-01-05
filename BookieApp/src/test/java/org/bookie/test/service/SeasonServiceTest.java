@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
 
+import javax.transaction.Transactional;
+
 import org.bookie.model.Organization;
 import org.bookie.model.Place;
 import org.bookie.model.PlacesInfo;
@@ -25,6 +27,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = TestConfiguration.class)
+@Transactional
 public class SeasonServiceTest {
 
 	@Autowired
