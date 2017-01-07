@@ -1,6 +1,7 @@
 package org.bookie.auth;
 
 import org.apache.commons.lang3.StringUtils;
+import org.bookie.auth.OrganizationWebAuthenticationDetailsSource.OrganizationWebAuthenticationDetails;
 import org.bookie.model.User;
 import org.bookie.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,7 +48,7 @@ public class DatabaseAuthenticationProvider extends AbstractUserDetailsAuthentic
 				this.userService.clearToken(user);
 			}
 		} else {
-			// user  NOT authenticated with password
+			// user NOT authenticated with password
 			boolean error = true;
 
 			if (!StringUtils.isEmpty(oneTimeToken)) {
@@ -71,6 +72,13 @@ public class DatabaseAuthenticationProvider extends AbstractUserDetailsAuthentic
 	@Override
 	protected UserDetails retrieveUser(final String username, final UsernamePasswordAuthenticationToken authentication)
 			throws AuthenticationException {
+		String organizationName = null;
+		if (authentication.getDetails() != null
+				&& authentication.getDetails() instanceof OrganizationWebAuthenticationDetails) {
+			organizationName = ((OrganizationWebAuthenticationDetails) authentication.getDetails())
+					.getOrganizationName();
+		}
+		// TODO:search for roles within organization
 		return this.userService.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException(username));
 	}
 

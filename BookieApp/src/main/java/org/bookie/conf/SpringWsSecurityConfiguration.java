@@ -3,6 +3,7 @@ package org.bookie.conf;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.tomcat.util.modeler.Registry;
 import org.bookie.auth.DatabaseAuthenticationProvider;
+import org.bookie.auth.OrganizationWebAuthenticationDetailsSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -18,6 +19,7 @@ import org.springframework.security.config.authentication.AuthenticationManagerB
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 
 @Configuration
 @EnableWebSecurity
@@ -27,32 +29,38 @@ public class SpringWsSecurityConfiguration extends WebSecurityConfigurerAdapter 
 	@Autowired
 	private Environment env;
 
+	@Autowired
+	private WebAuthenticationDetailsSource authenticationDetailsSource;
+
 	@Override
 	protected void configure(final HttpSecurity http) throws Exception {
-		//TODO: add here some config :)
+		// TODO: add here some config :)
 
-		//		http.csrf()
-		//				.disable()
-		//				.authorizeRequests()
-		//				.antMatchers("/" + AppStatusEndpoint.ENDPOINT_NAME).not().authenticated() // expose /appStatus for not authenticated clients
-		//				.antMatchers("/" + AppStatusEndpoint.ENDPOINT_NAME).permitAll() // expose /appStatus for all authenticated clients regardless of role
-		//				//.antMatchers("/configprops/**", "/info/**", "/metrics/**", "/health/**", "/jolokia/**", "/env/**",						"/dump/**", "/trace/**")				.hasRole("managementGrp")
-		//				.antMatchers("/health", "/info", "/metrics", "/env").hasRole("managementGrp")
-		//				.antMatchers(ENDPOINT_READ_DOCUMENT).not().authenticated()
-		//				.antMatchers(ENDPOINT_READ_DOCUMENT).permitAll()
-		//				.antMatchers("/**").hasRole("servicesGrp")
-		//				.anyRequest().authenticated()
-		//				.and()
-		//				.httpBasic();
+		// http.csrf().disable().authorizeRequests()
+		// .antMatchers("/" +
+		// AppStatusEndpoint.ENDPOINT_NAME).not().authenticated() //
+		// expose /appStatus for not authenticated clients
+		// .antMatchers("/" +
+		// AppStatusEndpoint.ENDPOINT_NAME).permitAll() // expose
+		// /appStatus for all authenticated clients regardless of role
+		// //.antMatchers("/configprops/**", "/info/**", "/metrics/**",
+		// "/health/**", "/jolokia/**", "/env/**", "/dump/**",
+		// "/trace/**") .hasRole("managementGrp")
+		// .antMatchers("/health", "/info", "/metrics",
+		// "/env").hasRole("managementGrp")
+		// .antMatchers(ENDPOINT_READ_DOCUMENT).not().authenticated()
+		// .antMatchers(ENDPOINT_READ_DOCUMENT).permitAll()
+		// .antMatchers("/**").hasRole("admin").anyRequest().authenticated().and().httpBasic()
+
+		// IMPORTANT
+		// .authenticationDetailsSource(this.authenticationDetailsSource);
 	}
 
 	@Override
 	protected void configure(final AuthenticationManagerBuilder auth) throws Exception {
 		final String[] activeProfiles = this.env.getActiveProfiles();
 		if (!ArrayUtils.contains(activeProfiles, "dbAuth")) {
-			auth
-					.inMemoryAuthentication()
-					.withUser("admin").password("admin").roles("servicesGrp", "managementGrp")
+			auth.inMemoryAuthentication().withUser("admin").password("admin").roles("servicesGrp", "managementGrp")
 					.and().withUser("user").password("user").roles("servicesGrp");
 		} else {
 			// this adds db authentication provider
@@ -62,6 +70,11 @@ public class SpringWsSecurityConfiguration extends WebSecurityConfigurerAdapter 
 		if (Registry.getRegistry(null, null).findManagedBean(MBEAN_TOMCAT_SERVICE) != null) {
 			Registry.getRegistry(null, null).unregisterComponent(MBEAN_TOMCAT_SERVICE);
 		}
+	}
+
+	@Bean
+	public WebAuthenticationDetailsSource authenticationDetailsSource() {
+		return new OrganizationWebAuthenticationDetailsSource();
 	}
 
 	@Configuration
