@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,8 +29,8 @@ public class SeasonEndpoint {
 	@Autowired
 	private OrganizationService organizationService;
 
-	@RequestMapping(method = RequestMethod.POST, value = "/{organizationName}")
-	public ResponseEntity<?> createSeason(final @PathVariable String organizationName,
+	@RequestMapping(method = RequestMethod.POST, value = "/")
+	public ResponseEntity<?> createSeason(final @RequestHeader String organizationName,
 			@RequestBody final Season season) {
 		final Organization org = this.organizationService.findByName(organizationName);
 		if (org == null) {
@@ -46,13 +47,13 @@ public class SeasonEndpoint {
 		return response;
 	}
 
-	@RequestMapping(method = RequestMethod.GET, value = "/{organizationName}")
-	public SeasonDetails getCurrent(final @PathVariable String organizationName) {
+	@RequestMapping(method = RequestMethod.GET, value = "/")
+	public SeasonDetails getCurrent(final @RequestHeader String organizationName) {
 		return this.seasonService.getDetailsCurrent(organizationName);
 	}
 
-	@RequestMapping(method = RequestMethod.GET, value = "/{organizationName}/{date}")
-	public SeasonDetails getByDate(@PathVariable final String organizationName, @PathVariable final Date date) {
+	@RequestMapping(method = RequestMethod.GET, value = "/{date}")
+	public SeasonDetails getByDate(@RequestHeader final String organizationName, @PathVariable final Date date) {
 		return this.seasonService.getDetailsByDate(organizationName, date);
 	}
 }
