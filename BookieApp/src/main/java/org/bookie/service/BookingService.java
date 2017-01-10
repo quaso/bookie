@@ -77,7 +77,7 @@ public class BookingService {
 		booking.setOwner(owner);
 		booking.setPlace(place);
 		booking.setCreatedAt(new Date());
-		booking.setCreatedBy((User) authentication.getPrincipal());
+		booking.setCreatedBy(this.extractDbUserFromAuth(authentication));
 		booking.setType(type);
 		booking.setNote(note);
 
@@ -100,7 +100,7 @@ public class BookingService {
 		boolean admin = false;
 		if (authentication != null) {
 			admin = authentication.getAuthorities().stream()
-					.anyMatch(ga -> ga.getAuthority().equals("ROLE_ADMIN_" + organizationName)
+					.anyMatch(ga -> ga.getAuthority().equals("ROLE_ADMIN")
 							|| ga.getAuthority().equals("ROLE_SUPER_ADMIN"));
 		}
 		final Class<? extends OwnerTimeSlot> clazz = admin ? Booking.class : OwnerTimeSlot.class;
@@ -108,7 +108,7 @@ public class BookingService {
 				types, placeIds, ownerId, clazz);
 		if (!admin) {
 			// remove user info for other owners
-			final String userId = authentication != null ? ((User) authentication.getPrincipal()).getId() : null;
+			final String userId = authentication != null ? this.extractDbUserFromAuth(authentication).getId() : null;
 			list.forEach(ots -> {
 				if (!ots.getOwner().getId().equals(userId)) {
 					ots.setOwner(null);
@@ -198,5 +198,9 @@ public class BookingService {
 		final LocalDate lds = timeStart.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 		final LocalDate lde = timeEnd.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 		return lds.equals(lde);
+	}
+
+	private User extractDbUserFromAuth(final Authentication authentication) {
+		return ((org.bookie.auth.User) authentication.getPrincipal()).getDbUser();
 	}
 }

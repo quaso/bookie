@@ -23,7 +23,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 
 @Configuration
 @EnableWebSecurity
-public class SpringWsSecurityConfiguration extends WebSecurityConfigurerAdapter {
+public class SpringSecurityConfiguration extends WebSecurityConfigurerAdapter {
 	private static final String MBEAN_TOMCAT_SERVICE = "Tomcat:type=Service";
 
 	@Autowired

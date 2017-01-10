@@ -16,12 +16,12 @@ public class SeasonPlace extends AbstractEntity {
 
 	@ManyToOne(targetEntity = Season.class, fetch = FetchType.LAZY)
 	@org.hibernate.annotations.Cascade({ org.hibernate.annotations.CascadeType.LOCK })
-	@JoinColumns({ @JoinColumn(name = "Seasonid", referencedColumnName = "id", nullable = false) })
+	@JoinColumns({ @JoinColumn(name = "SeasonId", referencedColumnName = "id", nullable = false) })
 	private Season season;
 
 	@ManyToOne(targetEntity = Place.class, fetch = FetchType.LAZY)
 	@org.hibernate.annotations.Cascade({ org.hibernate.annotations.CascadeType.LOCK })
-	@JoinColumns({ @JoinColumn(name = "Placeid", referencedColumnName = "id", nullable = false) })
+	@JoinColumns({ @JoinColumn(name = "PlaceId", referencedColumnName = "id", nullable = false) })
 	private Place place;
 
 	public void setSeason(final Season value) {
@@ -45,14 +45,16 @@ public class SeasonPlace extends AbstractEntity {
 		final StringBuffer sb = new StringBuffer();
 		sb.append("SeasonPlace[ ");
 		sb.append("Id=").append(this.getId()).append(" ");
-		if (this.getSeason() != null)
+		if (this.getSeason() != null) {
 			sb.append("Season.Persist_ID=").append(this.getSeason().toString()).append(" ");
-		else
+		} else {
 			sb.append("Season=null ");
-		if (this.getPlace() != null)
+		}
+		if (this.getPlace() != null) {
 			sb.append("Place.Persist_ID=").append(this.getPlace().toString()).append(" ");
-		else
+		} else {
 			sb.append("Place=null ");
+		}
 		sb.append("]");
 		return sb.toString();
 	}

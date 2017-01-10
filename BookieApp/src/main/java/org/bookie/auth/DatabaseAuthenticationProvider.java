@@ -2,7 +2,6 @@ package org.bookie.auth;
 
 import org.apache.commons.lang3.StringUtils;
 import org.bookie.auth.OrganizationWebAuthenticationDetailsSource.OrganizationWebAuthenticationDetails;
-import org.bookie.model.User;
 import org.bookie.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -39,13 +38,13 @@ public class DatabaseAuthenticationProvider extends AbstractUserDetailsAuthentic
 		}
 
 		final String presentedPassword = authentication.getCredentials().toString();
-		final String oneTimeToken = user.getOneTimeToken();
+		final String oneTimeToken = user.getDbUser().getOneTimeToken();
 
 		if (this.passwordEncoder.matches(presentedPassword, user.getPassword())) {
 			// user authenticated with password
 			// clear token if there is some
 			if (!StringUtils.isEmpty(oneTimeToken)) {
-				this.userService.clearToken(user);
+				this.userService.clearToken(user.getDbUser());
 			}
 		} else {
 			// user NOT authenticated with password
@@ -54,9 +53,9 @@ public class DatabaseAuthenticationProvider extends AbstractUserDetailsAuthentic
 			if (!StringUtils.isEmpty(oneTimeToken)) {
 				// check token
 				user.setTokenUsed(true);
-				if (this.passwordEncoder.matches(presentedPassword, user.getOneTimeToken())) {
+				if (this.passwordEncoder.matches(presentedPassword, user.getDbUser().getOneTimeToken())) {
 					// one time token matches
-					this.userService.clearToken(user);
+					this.userService.clearToken(user.getDbUser());
 					error = false;
 				}
 			}
@@ -78,8 +77,9 @@ public class DatabaseAuthenticationProvider extends AbstractUserDetailsAuthentic
 			organizationName = ((OrganizationWebAuthenticationDetails) authentication.getDetails())
 					.getOrganizationName();
 		}
-		// TODO:search for roles within organization
-		return this.userService.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException(username));
+		final org.bookie.model.User dbUser = this.userService.findByUsername(username)
+				.orElseThrow(() -> new UsernameNotFoundException(username));
+		return new User(dbUser, this.userService.findRolesForUserOrganization(dbUser, organizationName));
 	}
 
 }

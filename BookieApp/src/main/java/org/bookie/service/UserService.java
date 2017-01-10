@@ -2,12 +2,16 @@ package org.bookie.service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.bookie.exception.UserNotFoundException;
+import org.bookie.model.Role;
 import org.bookie.model.User;
+import org.bookie.repository.OrganizationUserRoleRepository;
 import org.bookie.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -17,15 +21,17 @@ import org.springframework.util.Assert;
 @Service
 @Transactional
 public class UserService {
-
 	@Autowired
 	private UserRepository userRepository;
+
+	@Autowired
+	private OrganizationUserRoleRepository organizationUserRoleRepository;
 
 	@Autowired
 	private PasswordEncoder passwordEncoder;
 
 	public User createUser(final User user) {
-		// TODO: add more here :)
+		// TODO: add more here ? :)
 		user.setPassword(this.passwordEncoder.encode(user.getPassword()));
 		this.userRepository.save(user);
 		return user;
@@ -63,6 +69,11 @@ public class UserService {
 
 	public Optional<User> findByUsername(final String username) {
 		return this.userRepository.findByUsernameEqualsIgnoreCase(username);
+	}
+
+	public Set<Role> findRolesForUserOrganization(final User user, final String organizationName) {
+		return this.organizationUserRoleRepository.getByUserIdAndOrganizationName(user.getId(), organizationName)
+				.stream().map(our -> our.getRole()).collect(Collectors.toSet());
 	}
 
 	public void loginSuccess(final User user) {

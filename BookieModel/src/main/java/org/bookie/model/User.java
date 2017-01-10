@@ -1,39 +1,18 @@
 package org.bookie.model;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.TreeSet;
-
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 
 import org.apache.commons.lang3.StringUtils;
 import org.bookie.exception.UserContactsBlankException;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.util.CollectionUtils;
 
 @Entity
 @org.hibernate.annotations.Proxy(lazy = false)
 @Table(name = "`User`")
-public class User extends AbstractEntity implements UserDetails {
-
-	public static final int MAX_INVALID_LOGINS = 3;
-
-	public static final String ROLE_TOKEN_USED = "ROLE_TOKEN_USED";
+public class User extends AbstractEntity {
 
 	@Column(name = "username", nullable = false, unique = true)
 	private String username;
@@ -65,13 +44,6 @@ public class User extends AbstractEntity implements UserDetails {
 	@Column(name = "failedLogins", nullable = true)
 	private int failedLogins;
 
-	@ManyToMany(cascade = CascadeType.ALL)
-	@JoinTable(name = "user_role", joinColumns = @JoinColumn(name = "userId", referencedColumnName = "id", nullable = false), inverseJoinColumns = @JoinColumn(name = "roleId", referencedColumnName = "id", nullable = false))
-	private Set<Role> roles;
-
-	@Transient
-	private boolean tokenUsed = false;
-
 	@PrePersist
 	public void prePersist() {
 		this.failedLogins = 0;
@@ -85,7 +57,6 @@ public class User extends AbstractEntity implements UserDetails {
 		}
 	}
 
-	@Override
 	public String getUsername() {
 		return this.username;
 	}
@@ -126,7 +97,6 @@ public class User extends AbstractEntity implements UserDetails {
 		return this.email;
 	}
 
-	@Override
 	public boolean isEnabled() {
 		return this.enabled;
 	}
@@ -143,7 +113,6 @@ public class User extends AbstractEntity implements UserDetails {
 		return this.verified;
 	}
 
-	@Override
 	public String getPassword() {
 		return this.password;
 	}
@@ -160,25 +129,6 @@ public class User extends AbstractEntity implements UserDetails {
 		this.oneTimeToken = oneTimeToken;
 	}
 
-	public Set<Role> getRoles() {
-		if (this.roles == null) {
-			this.roles = new HashSet<>();
-		}
-		return this.roles;
-	}
-
-	public void setRoles(final Set<Role> roles) {
-		this.roles = roles;
-	}
-
-	public boolean isTokenUsed() {
-		return this.tokenUsed;
-	}
-
-	public void setTokenUsed(final boolean tokenUsed) {
-		this.tokenUsed = tokenUsed;
-	}
-
 	public int getFailedLogins() {
 		return this.failedLogins;
 	}
@@ -188,88 +138,10 @@ public class User extends AbstractEntity implements UserDetails {
 	}
 
 	@Override
-	public Collection<? extends GrantedAuthority> getAuthorities() {
-		final Set<GrantedAuthority> result = new TreeSet<>(new Comparator<GrantedAuthority>() {
-
-			@Override
-			public int compare(final GrantedAuthority g1, final GrantedAuthority g2) {
-				if (g2.getAuthority() == null) {
-					return -1;
-				}
-
-				if (g1.getAuthority() == null) {
-					return 1;
-				}
-
-				return g1.getAuthority().compareTo(g2.getAuthority());
-			}
-		});
-		if (!CollectionUtils.isEmpty(this.roles)) {
-			this.roles.forEach(r -> result.add(new SimpleGrantedAuthority(r.getName())));
-		}
-		if (this.tokenUsed) {
-			result.add(new SimpleGrantedAuthority(ROLE_TOKEN_USED));
-		}
-
-		return Collections.unmodifiableCollection(result);
-	}
-
-	@Override
-	public boolean isAccountNonExpired() {
-		return true;
-	}
-
-	@Override
-	public boolean isAccountNonLocked() {
-		final int maxFailedLogins = this.tokenUsed ? 1 : MAX_INVALID_LOGINS;
-		return this.failedLogins < maxFailedLogins;
-	}
-
-	@Override
-	public boolean isCredentialsNonExpired() {
-		return true;
-	}
-
-	@Override
 	public String toString() {
-		final StringBuilder builder = new StringBuilder();
-		builder.append("User [");
-		if (this.username != null) {
-			builder.append("username=").append(this.username).append(", ");
-		}
-		if (this.name != null) {
-			builder.append("name=").append(this.name).append(", ");
-		}
-		if (this.surname != null) {
-			builder.append("surname=").append(this.surname).append(", ");
-		}
-		if (this.phone != null) {
-			builder.append("phone=").append(this.phone).append(", ");
-		}
-		if (this.email != null) {
-			builder.append("email=").append(this.email).append(", ");
-		}
-		builder.append("enabled=").append(this.enabled).append(", verified=").append(this.verified)
-				.append(", failedLogins=")
-				.append(this.failedLogins).append(", ");
-		if (this.roles != null) {
-			builder.append("roles=").append(this.toString(this.roles)).append(", ");
-		}
-		builder.append("tokenUsed=").append(this.tokenUsed).append("]");
-		return builder.toString();
+		return "User [username=" + this.username + ", name=" + this.name + ", surname=" + this.surname + ", phone="
+				+ this.phone + ", email=" + this.email + ", enabled=" + this.enabled + ", verified=" + this.verified
+				+ ", failedLogins=" + this.failedLogins + "]";
 	}
 
-	private String toString(final Collection<?> collection) {
-		final StringBuilder builder = new StringBuilder();
-		builder.append("[");
-		int i = 0;
-		for (final Iterator<?> iterator = collection.iterator(); iterator.hasNext(); i++) {
-			if (i > 0) {
-				builder.append(", ");
-			}
-			builder.append(iterator.next());
-		}
-		builder.append("]");
-		return builder.toString();
-	}
 }

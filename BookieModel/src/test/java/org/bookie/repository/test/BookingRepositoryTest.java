@@ -11,6 +11,7 @@ import javax.transaction.Transactional;
 
 import org.bookie.model.Booking;
 import org.bookie.model.Organization;
+import org.bookie.model.OrganizationUserRole;
 import org.bookie.model.OwnerTimeSlot;
 import org.bookie.model.Place;
 import org.bookie.model.Role;
@@ -20,6 +21,7 @@ import org.bookie.model.TimeSlot;
 import org.bookie.model.User;
 import org.bookie.repository.BookingRepositoryCustom;
 import org.bookie.repository.OrganizationRepository;
+import org.bookie.repository.OrganizationUserRoleRepository;
 import org.bookie.repository.PlaceRepository;
 import org.bookie.repository.RoleRepository;
 import org.bookie.repository.SeasonPlaceRepository;
@@ -61,6 +63,9 @@ public class BookingRepositoryTest {
 	@Autowired
 	private OrganizationRepository organizationRepository;
 
+	@Autowired
+	private OrganizationUserRoleRepository organizationUserRoleRepository;
+
 	private final LocalDate now = LocalDate.now();
 	private Organization org;
 	private User user1, user2;
@@ -68,13 +73,13 @@ public class BookingRepositoryTest {
 
 	@Before
 	public void init() {
-		final Role role = this.createRole("role");
-		this.user1 = this.createUser("name1", role);
-		this.user2 = this.createUser("name2", role);
-
 		this.org = new Organization();
 		this.org.setName("org");
 		this.organizationRepository.save(this.org);
+
+		final Role role = this.createRole("role");
+		this.user1 = this.createUser("name1", role, this.org);
+		this.user2 = this.createUser("name2", role, this.org);
 
 		final Date start = this.date(this.now.withDayOfMonth(1).atStartOfDay());
 		final Date end = this.date(this.now.withDayOfMonth(1).plusMonths(1).atStartOfDay().minusMinutes(1));
@@ -340,15 +345,19 @@ public class BookingRepositoryTest {
 		return role;
 	}
 
-	private User createUser(final String name, final Role role) {
+	private User createUser(final String name, final Role role, final Organization organization) {
 		final User user = new User();
 		user.setUsername(name);
 		user.setName(name);
 		user.setSurname("surname");
 		user.setPhone("123");
 		user.setPassword("pwd");
-		user.getRoles().add(role);
 		this.userRepository.save(user);
+
+		final OrganizationUserRole our = new OrganizationUserRole();
+		our.setValues(organization, user, role);
+		this.organizationUserRoleRepository.save(our);
+
 		return user;
 	}
 

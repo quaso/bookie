@@ -9,11 +9,14 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 
+import org.bookie.auth.OrganizationWebAuthenticationDetailsSource.OrganizationWebAuthenticationDetails;
 import org.bookie.exception.NotFreeException;
 import org.bookie.model.Booking;
 import org.bookie.model.Organization;
+import org.bookie.model.OrganizationUserRole;
 import org.bookie.model.Place;
 import org.bookie.model.Role;
 import org.bookie.model.Season;
@@ -22,6 +25,7 @@ import org.bookie.model.TimeSlot;
 import org.bookie.model.User;
 import org.bookie.repository.BookingRepositoryCustom;
 import org.bookie.repository.OrganizationRepository;
+import org.bookie.repository.OrganizationUserRoleRepository;
 import org.bookie.repository.PlaceRepository;
 import org.bookie.repository.RoleRepository;
 import org.bookie.repository.SeasonPlaceRepository;
@@ -35,8 +39,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.security.authentication.AuthenticationDetailsSource;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -71,10 +78,16 @@ public class BookingServiceTest {
 	private OrganizationRepository organizationRepository;
 
 	@Autowired
+	private OrganizationUserRoleRepository organizationUserRoleRepository;
+
+	@Autowired
 	private BookingService bookingService;
 
 	@Autowired
 	private ProviderManager providerManager;
+
+	@Autowired
+	private AuthenticationDetailsSource<HttpServletRequest, ?> authenticationDetailsSource;
 
 	private final LocalDate now = LocalDate.now();
 	private User user1, user2;
@@ -84,16 +97,16 @@ public class BookingServiceTest {
 
 	@Before
 	public void init() {
-		this.user1 = this.createUser("name1", this.createRole("role1"));
-		this.user2 = this.createUser("name2", this.createRole("role2"));
+		this.org = new Organization();
+		this.org.setName("org");
+		this.organizationRepository.save(this.org);
+
+		this.user1 = this.createUser("name1", this.createRole("role1"), this.org);
+		this.user2 = this.createUser("name2", this.createRole("role2"), this.org);
 
 		final Date start = Date.from(this.now.withDayOfMonth(1).atStartOfDay(ZoneId.systemDefault()).toInstant());
 		final Date end = Date.from(this.now.withDayOfMonth(1).plusMonths(1).atStartOfDay(ZoneId.systemDefault())
 				.minusMinutes(1).toInstant());
-
-		this.org = new Organization();
-		this.org.setName("org");
-		this.organizationRepository.save(this.org);
 
 		this.season = this.createSeason(start, end, "test", "aaa,bbb", this.org);
 
@@ -307,10 +320,9 @@ public class BookingServiceTest {
 		this.createBooking(this.now.atTime(13, 0), this.now.atTime(14, 0), "zzz", this.user1, this.t1);
 		this.createBooking(this.now.atTime(13, 0), this.now.atTime(14, 0), "zzz", this.user2, this.t2);
 
-		final User admin = this.createUser("admin", this.createRole("ROLE_SUPER_ADMIN"));
-
-		SecurityContextHolder.getContext().setAuthentication(this.providerManager
-				.authenticate(new UsernamePasswordAuthenticationToken(admin.getUsername(), USER_PWD)));
+		final User admin = this.createUser("admin", this.createRole("ROLE_ADMIN"), this.org);
+		final Authentication authResult = this.authenticate(admin.getUsername(), USER_PWD, this.org.getName());
+		SecurityContextHolder.getContext().setAuthentication(authResult);
 
 		final List<? extends TimeSlot> temp = this.bookingService.find(this.org.getName(),
 				this.date(this.now.atTime(10, 0)), this.date(this.now.atTime(14, 0)), Arrays.asList("zzz"), null, null);
@@ -351,16 +363,20 @@ public class BookingServiceTest {
 		return role;
 	}
 
-	private User createUser(final String name, final Role role) {
+	private User createUser(final String name, final Role role, final Organization organization) {
 		final User user = new User();
 		user.setUsername(name);
 		user.setName(name);
 		user.setSurname("surname");
 		user.setPhone("123");
 		user.setPassword(USER_PWD);
-		user.getRoles().add(role);
 		user.setEnabled(true);
 		this.userService.createUser(user);
+
+		final OrganizationUserRole our = new OrganizationUserRole();
+		our.setValues(organization, user, role);
+		this.organizationUserRoleRepository.save(our);
+
 		return user;
 	}
 
@@ -378,10 +394,19 @@ public class BookingServiceTest {
 		return result;
 	}
 
-	private void createSeasonPlace(final Season season, final Place place) {
+	private void createSeasonPlace(final Season pSeason, final Place place) {
 		final SeasonPlace sp = new SeasonPlace();
-		sp.setSeason(season);
+		sp.setSeason(pSeason);
 		sp.setPlace(place);
 		this.seasonPlaceRepository.save(sp);
+	}
+
+	private Authentication authenticate(final String username, final String password, final String organizationName) {
+		final UsernamePasswordAuthenticationToken authRequest = new UsernamePasswordAuthenticationToken(username,
+				password);
+		final MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addHeader(OrganizationWebAuthenticationDetails.HEADER_ORGANIZATION_NAME, organizationName);
+		authRequest.setDetails(this.authenticationDetailsSource.buildDetails(request));
+		return this.providerManager.authenticate(authRequest);
 	}
 }

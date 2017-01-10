@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import org.bookie.auth.OrganizationWebAuthenticationDetailsSource.OrganizationWebAuthenticationDetails;
 import org.bookie.model.Organization;
 import org.bookie.model.Season;
 import org.bookie.repository.OrganizationRepository;
@@ -122,7 +123,8 @@ public class SeasonEndpointTest {
 		responseFields.addAll(requestFields);
 
 		this.mockMvc
-				.perform(post("/api/season/{organizationName}", org.getName())
+				.perform(post("/api/season/")
+						.header(OrganizationWebAuthenticationDetails.HEADER_ORGANIZATION_NAME, org.getName())
 						.contentType(MediaType.APPLICATION_JSON)
 						.accept(MediaType.APPLICATION_JSON_VALUE)
 						.content(this.objectMapper.writeValueAsString(request)))
