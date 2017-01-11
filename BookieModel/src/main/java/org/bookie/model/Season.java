@@ -11,12 +11,13 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.UniqueConstraint;
 
 import org.hibernate.annotations.Proxy;
 
 @Entity
 @Proxy(lazy = false)
-@Table(name = "Season")
+@Table(name = "Season", uniqueConstraints = @UniqueConstraint(columnNames = { "name", "organizationId" }))
 public class Season extends AbstractEntity {
 
 	@Column(name = "name", nullable = false, length = 255)

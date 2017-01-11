@@ -23,7 +23,6 @@ public class SeasonService {
 	private SeasonPlaceRepository seasonPlaceRepository;
 
 	public Season createSeason(final Season season) {
-		// TODO: check if name, dateStart are unique for the organization
 		this.seasonRepository.save(season);
 		return season;
 	}
