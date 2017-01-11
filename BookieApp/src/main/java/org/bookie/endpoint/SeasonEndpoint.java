@@ -1,7 +1,7 @@
 package org.bookie.endpoint;
 
-import java.net.URI;
 import java.util.Date;
+import java.util.function.Supplier;
 
 import org.bookie.model.Organization;
 import org.bookie.model.Season;
@@ -9,6 +9,7 @@ import org.bookie.model.SeasonDetails;
 import org.bookie.service.OrganizationService;
 import org.bookie.service.SeasonService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @RestController
 @RequestMapping("/api/season")
@@ -38,22 +38,28 @@ public class SeasonEndpoint {
 		}
 		season.setOrganization(org);
 		this.seasonService.createSeason(season);
-
-		final URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
-				.buildAndExpand(season.getId()).toUri();
-
-		final ResponseEntity<Season> response = new ResponseEntity<>(season, HttpStatus.CREATED);
-		//		response.getHeaders().setLocation(location);
-		return response;
+		return new ResponseEntity<>(season, HttpStatus.CREATED);
 	}
 
 	@RequestMapping(method = RequestMethod.GET, value = "/")
-	public SeasonDetails getCurrent(final @RequestHeader String organizationName) {
-		return this.seasonService.getDetailsCurrent(organizationName);
+	public ResponseEntity<SeasonDetails> getCurrent(final @RequestHeader String organizationName) {
+		return this.find(() -> this.seasonService.getDetailsCurrent(organizationName));
 	}
 
 	@RequestMapping(method = RequestMethod.GET, value = "/{date}")
-	public SeasonDetails getByDate(@RequestHeader final String organizationName, @PathVariable final Date date) {
-		return this.seasonService.getDetailsByDate(organizationName, date);
+	public ResponseEntity<SeasonDetails> getByDate(@RequestHeader final String organizationName,
+			@PathVariable @DateTimeFormat(pattern = "yyyyMMdd") final Date date) {
+		return this.find(() -> this.seasonService.getDetailsByDate(organizationName, date));
+	}
+
+	private ResponseEntity<SeasonDetails> find(final Supplier<SeasonDetails> supplier) {
+		final SeasonDetails season = supplier.get();
+		ResponseEntity<SeasonDetails> result;
+		if (season == null) {
+			result = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		} else {
+			result = new ResponseEntity<SeasonDetails>(season, HttpStatus.OK);
+		}
+		return result;
 	}
 }

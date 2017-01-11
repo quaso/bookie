@@ -1,4 +1,4 @@
-= `/season`
+= `/api/season`
 :doctype: book
 :icons: font
 :source-highlighter: highlightjs
@@ -8,35 +8,85 @@
 
 link:index.html[Back to overview]
 
-[[request]]
-= Request structure
+== Overview
+Season management endpoint
 
-[[request-body]]
-== Body
-include::{snippets}/create-season-test/request-fields.adoc[]
+== Create season
 
-[[request-headers]]
-== Headers
+Create new season for an organization. Only one season may exist for any date (one day cannot be in two seasons). In case season cannot be created returns 409 (_Conflict_).
+
+=== Request structure
+
+==== Headers
 include::{snippets}/create-season-test/request-headers.adoc[]
 
-[[examples]]
-= Examples
+==== Body
+include::{snippets}/create-season-test/request-fields.adoc[]
 
-[[examples-200]]
-== 200
-
-[[examples-200-request]]
-=== Request
-include::{snippets}/create-season-test/http-request.adoc[]
-
-[[examples-200-curl]]
 ==== Curl call
 include::{snippets}/create-season-test/curl-request.adoc[]
 
-[[examples-200-response]]
-=== Response
+==== Example
+include::{snippets}/create-season-test/http-request.adoc[]
+
+=== Response structure
+==== Body
+include::{snippets}/create-season-test/response-fields.adoc[]
+
+==== Example
 include::{snippets}/create-season-test/http-response.adoc[]
 
+== Get current season
+
+Retrieve season for current date. In case of no current season, returns 404 (_Not Found_).
+
+=== Request structure
+
+==== Headers
+include::{snippets}/get-current-test/request-headers.adoc[]
+
+
+==== Curl call
+include::{snippets}/get-current-test/curl-request.adoc[]
+
+==== Example
+include::{snippets}/get-current-test/http-request.adoc[]
+
+=== Response structure
+
+==== Body
+include::{snippets}/get-current-test/response-fields.adoc[]
+
+==== Example
+include::{snippets}/get-current-test/http-response.adoc[]
+
+== Get season by date
+
+Retrieve season for any date. In case of no current season, returns 404 (_Not Found_).
+
+=== Request structure
+
+==== Headers
+include::{snippets}/get-by-date-test/request-headers.adoc[]
+
+==== Path parameters
+include::{snippets}/get-by-date-test/path-parameters.adoc[]
+
+==== Curl call
+include::{snippets}/get-by-date-test/curl-request.adoc[]
+
+==== Example
+include::{snippets}/get-by-date-test/http-request.adoc[]
+
+=== Response structure
+
+==== Body
+include::{snippets}/get-by-date-test/response-fields.adoc[]
+
+==== Example
+include::{snippets}/get-by-date-test/http-response.adoc[]
+
+////
 [[examples-422]]
 == 422
 Received when the request body does not contain a JSON.
@@ -53,3 +103,5 @@ include::{snippets}/i_submit_an_invalid_-j-s-o-n_for_synchronous_processing/http
 include::{snippets}/create-season-test_but_there_is_a_problem_with_the_server/http-response.adoc[]
 
 link:index.html[Back to overview]
+
+////

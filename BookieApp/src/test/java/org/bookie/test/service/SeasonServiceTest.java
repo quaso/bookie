@@ -1,6 +1,7 @@
 package org.bookie.test.service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 
@@ -22,11 +23,13 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = TestConfiguration.class)
+@ActiveProfiles("test")
 @Transactional
 public class SeasonServiceTest {
 
@@ -130,7 +133,44 @@ public class SeasonServiceTest {
 		@SuppressWarnings("deprecation")
 		final SeasonDetails seasonDetails4 = this.seasonService.getDetailsByDate(org.getName(), new Date(1900, 1, 1));
 		Assert.assertNull(seasonDetails4);
+	}
 
+	@Test
+	public void currentSeasonEmptyTest() {
+		final Organization org = new Organization();
+		org.setName("org");
+		this.organizationRepository.save(org);
+
+		final SeasonDetails current = this.seasonService.getDetailsCurrent(org.getName());
+		Assert.assertNull(current);
+	}
+
+	@Test
+	public void getOldSeasonTest() {
+		final LocalDate now = LocalDate.now();
+		final Date start = Date
+				.from(now.minusMonths(3).withDayOfMonth(1).atStartOfDay(ZoneId.systemDefault()).toInstant());
+		final Date end = Date.from(
+				now.minusMonths(1).withDayOfMonth(1).plusMonths(1).atStartOfDay(ZoneId.systemDefault()).minusMinutes(1)
+						.toInstant());
+
+		final Organization org = new Organization();
+		org.setName("org");
+		this.organizationRepository.save(org);
+
+		final Season season = new Season();
+		season.setDateStart(start);
+		season.setDateEnd(end);
+		season.setTimeStart(7 * 60);
+		season.setTimeEnd(22 * 60);
+		season.setName("test 1");
+		season.setTypes("aaa,bbb");
+		season.setOrganization(org);
+		this.seasonRepository.save(season);
+
+		final SeasonDetails seasonDetails = this.seasonService.getDetailsByDate(org.getName(),
+				Date.from(LocalDateTime.now().minusMonths(2).atZone(ZoneId.systemDefault()).toInstant()));
+		Assert.assertNotNull(seasonDetails);
 	}
 
 	private Place createPlace(final String name, final String type, final Organization organization) {
