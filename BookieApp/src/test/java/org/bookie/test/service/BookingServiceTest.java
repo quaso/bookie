@@ -10,78 +10,36 @@ import java.util.List;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.transaction.Transactional;
 
 import org.bookie.auth.OrganizationWebAuthenticationDetailsSource.OrganizationWebAuthenticationDetails;
 import org.bookie.exception.NotFreeException;
 import org.bookie.model.Booking;
 import org.bookie.model.Organization;
-import org.bookie.model.OrganizationUserRole;
 import org.bookie.model.Place;
-import org.bookie.model.Role;
 import org.bookie.model.Season;
-import org.bookie.model.SeasonPlace;
 import org.bookie.model.TimeSlot;
 import org.bookie.model.User;
 import org.bookie.repository.BookingRepositoryCustom;
-import org.bookie.repository.OrganizationRepository;
-import org.bookie.repository.OrganizationUserRoleRepository;
-import org.bookie.repository.PlaceRepository;
-import org.bookie.repository.RoleRepository;
-import org.bookie.repository.SeasonPlaceRepository;
-import org.bookie.repository.SeasonRepository;
 import org.bookie.service.BookingService;
-import org.bookie.service.UserService;
-import org.bookie.test.conf.TestConfiguration;
+import org.bookie.test.AbstractTest;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.authentication.AuthenticationDetailsSource;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = TestConfiguration.class)
-@ActiveProfiles("test")
-@Transactional
-public class BookingServiceTest {
-
-	private static final String USER_PWD = "pwd";
-
-	@Autowired
-	private BookingRepositoryCustom bookingRepository;
-
-	@Autowired
-	private RoleRepository roleRepository;
-
-	@Autowired
-	private UserService userService;
-
-	@Autowired
-	private PlaceRepository placeRepository;
-
-	@Autowired
-	private SeasonRepository seasonRepository;
-
-	@Autowired
-	private SeasonPlaceRepository seasonPlaceRepository;
-
-	@Autowired
-	private OrganizationRepository organizationRepository;
-
-	@Autowired
-	private OrganizationUserRoleRepository organizationUserRoleRepository;
+public class BookingServiceTest extends AbstractTest {
 
 	@Autowired
 	private BookingService bookingService;
+
+	@Autowired
+	private BookingRepositoryCustom bookingRepository;
 
 	@Autowired
 	private ProviderManager providerManager;
@@ -97,9 +55,7 @@ public class BookingServiceTest {
 
 	@Before
 	public void init() {
-		this.org = new Organization();
-		this.org.setName("org");
-		this.organizationRepository.save(this.org);
+		this.org = this.createOrganization("org");
 
 		this.user1 = this.createUser("name1", this.createRole("role1"), this.org);
 		this.user2 = this.createUser("name2", this.createRole("role2"), this.org);
@@ -331,10 +287,6 @@ public class BookingServiceTest {
 		Assert.assertNotNull(((Booking) temp.get(1)).getOwner());
 	}
 
-	private Date date(final LocalDateTime ldt) {
-		return Date.from(ldt.atZone(ZoneId.systemDefault()).toInstant());
-	}
-
 	private Booking createBooking(final LocalDateTime start, final LocalDateTime end, final String type,
 			final User user, final Place place) {
 		Booking booking = null;
@@ -345,60 +297,6 @@ public class BookingServiceTest {
 			Assert.fail(e.getMessage());
 		}
 		return booking;
-	}
-
-	private Place createPlace(final String name, final String type, final Organization organization) {
-		final Place place = new Place();
-		place.setName(name);
-		place.setType(type);
-		place.setOrganization(organization);
-		this.placeRepository.save(place);
-		return place;
-	}
-
-	private Role createRole(final String name) {
-		final Role role = new Role();
-		role.setName(name);
-		this.roleRepository.save(role);
-		return role;
-	}
-
-	private User createUser(final String name, final Role role, final Organization organization) {
-		final User user = new User();
-		user.setUsername(name);
-		user.setName(name);
-		user.setSurname("surname");
-		user.setPhone("123");
-		user.setPassword(USER_PWD);
-		user.setEnabled(true);
-		this.userService.createUser(user);
-
-		final OrganizationUserRole our = new OrganizationUserRole();
-		our.setValues(organization, user, role);
-		this.organizationUserRoleRepository.save(our);
-
-		return user;
-	}
-
-	private Season createSeason(final Date start, final Date end, final String name, final String types,
-			final Organization organization) {
-		final Season result = new Season();
-		result.setDateStart(start);
-		result.setDateEnd(end);
-		result.setTimeStart(7 * 60);
-		result.setTimeEnd(22 * 60);
-		result.setName(name);
-		result.setTypes(types);
-		result.setOrganization(organization);
-		this.seasonRepository.save(result);
-		return result;
-	}
-
-	private void createSeasonPlace(final Season pSeason, final Place place) {
-		final SeasonPlace sp = new SeasonPlace();
-		sp.setSeason(pSeason);
-		sp.setPlace(place);
-		this.seasonPlaceRepository.save(sp);
 	}
 
 	private Authentication authenticate(final String username, final String password, final String organizationName) {

@@ -1,4 +1,4 @@
-package org.bookie.repository.test;
+package org.bookie.test;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -22,7 +22,8 @@ import org.bookie.repository.PlaceRepository;
 import org.bookie.repository.RoleRepository;
 import org.bookie.repository.SeasonPlaceRepository;
 import org.bookie.repository.SeasonRepository;
-import org.bookie.repository.UserRepository;
+import org.bookie.service.UserService;
+import org.bookie.test.conf.TestConfiguration;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -30,34 +31,36 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = MainTestConfiguration.class)
+@SpringBootTest(classes = TestConfiguration.class)
 @ActiveProfiles("test")
 @Transactional
 public abstract class AbstractTest {
 
-	@Autowired
-	protected BookingRepositoryCustom bookingRepository;
+	protected static final String USER_PWD = "pwd";
 
 	@Autowired
-	protected RoleRepository roleRepository;
+	private BookingRepositoryCustom bookingRepository;
 
 	@Autowired
-	protected UserRepository userRepository;
+	private RoleRepository roleRepository;
 
 	@Autowired
-	protected PlaceRepository placeRepository;
+	private UserService userService;
 
 	@Autowired
-	protected SeasonRepository seasonRepository;
+	private PlaceRepository placeRepository;
 
 	@Autowired
-	protected SeasonPlaceRepository seasonPlaceRepository;
+	private SeasonRepository seasonRepository;
 
 	@Autowired
-	protected OrganizationRepository organizationRepository;
+	private SeasonPlaceRepository seasonPlaceRepository;
 
 	@Autowired
-	protected OrganizationUserRoleRepository organizationUserRoleRepository;
+	private OrganizationRepository organizationRepository;
+
+	@Autowired
+	private OrganizationUserRoleRepository organizationUserRoleRepository;
 
 	protected final Organization createOrganization(final String name) {
 		final Organization org = new Organization();
@@ -113,14 +116,15 @@ public abstract class AbstractTest {
 		return this.roleRepository.save(role);
 	}
 
-	protected final User createUser(final String name, final Role role, final Organization organization) {
+	protected final User createUser(final String username, final Role role, final Organization organization) {
 		final User user = new User();
-		user.setUsername(name);
-		user.setName(name);
+		user.setUsername(username);
+		user.setName("n" + username);
 		user.setSurname("surname");
 		user.setPhone("123");
-		user.setPassword("pwd");
-		this.userRepository.save(user);
+		user.setPassword(USER_PWD);
+		user.setEnabled(true);
+		this.userService.createUser(user);
 
 		final OrganizationUserRole our = new OrganizationUserRole();
 		our.setValues(organization, user, role);

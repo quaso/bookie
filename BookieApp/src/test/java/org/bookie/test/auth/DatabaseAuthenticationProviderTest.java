@@ -7,24 +7,19 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.transaction.Transactional;
 
 import org.bookie.auth.OrganizationWebAuthenticationDetailsSource.OrganizationWebAuthenticationDetails;
 import org.bookie.model.Organization;
 import org.bookie.model.OrganizationUserRole;
 import org.bookie.model.Role;
 import org.bookie.model.User;
-import org.bookie.repository.OrganizationRepository;
 import org.bookie.repository.OrganizationUserRoleRepository;
-import org.bookie.repository.RoleRepository;
 import org.bookie.service.UserService;
-import org.bookie.test.conf.TestConfiguration;
+import org.bookie.test.AbstractTest;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.authentication.AuthenticationDetailsSource;
 import org.springframework.security.authentication.LockedException;
@@ -32,25 +27,13 @@ import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = TestConfiguration.class)
-@ActiveProfiles({ "test", "dbAuth" })
-@Transactional
-public class DatabaseAuthenticationProviderTest {
+public class DatabaseAuthenticationProviderTest extends AbstractTest {
 
 	private static final String PASSWORD = "123456";
 
 	@Autowired
-	private RoleRepository roleRepository;
-
-	@Autowired
 	private UserService userService;
-
-	@Autowired
-	private OrganizationRepository organizationRepository;
 
 	@Autowired
 	private OrganizationUserRoleRepository organizationUserRoleRepository;
@@ -213,20 +196,6 @@ public class DatabaseAuthenticationProviderTest {
 		}
 	}
 
-	private Organization createOrganization(final String name) {
-		final Organization organization = new Organization();
-		organization.setName(name);
-		this.organizationRepository.save(organization);
-		return organization;
-	}
-
-	private Role createRole(final String name) {
-		final Role role = new Role();
-		role.setName(name);
-		this.roleRepository.save(role);
-		return role;
-	}
-
 	private User createUser(final String username, final String password) {
 		final User result = new User();
 		result.setUsername(username);
@@ -235,8 +204,7 @@ public class DatabaseAuthenticationProviderTest {
 		result.setPhone("123");
 		result.setPassword(password);
 		result.setEnabled(true);
-		this.userService.createUser(result);
-		return result;
+		return this.userService.createUser(result);
 	}
 
 	private void addOrganizationUserRole(final Organization org, final User user, final Role role) {

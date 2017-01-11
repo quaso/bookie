@@ -26,22 +26,17 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-import javax.transaction.Transactional;
-
 import org.bookie.auth.OrganizationWebAuthenticationDetailsSource.OrganizationWebAuthenticationDetails;
 import org.bookie.model.Organization;
 import org.bookie.model.Place;
 import org.bookie.model.Season;
-import org.bookie.model.SeasonPlace;
-import org.bookie.repository.PlaceRepository;
-import org.bookie.repository.SeasonPlaceRepository;
 import org.bookie.service.OrganizationService;
 import org.bookie.service.SeasonService;
+import org.bookie.test.AbstractTest;
 import org.bookie.test.conf.WebTestConfiguration;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
@@ -53,8 +48,6 @@ import org.springframework.restdocs.headers.RequestHeadersSnippet;
 import org.springframework.restdocs.http.HttpDocumentation;
 import org.springframework.restdocs.mockmvc.RestDocumentationResultHandler;
 import org.springframework.restdocs.payload.FieldDescriptor;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
@@ -62,12 +55,9 @@ import org.springframework.web.context.WebApplicationContext;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-@RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @Import(WebTestConfiguration.class)
-@ActiveProfiles("test")
-@Transactional
-public class SeasonEndpointTest {
+public class SeasonEndpointTest extends AbstractTest {
 
 	@Autowired
 	private WebApplicationContext wac;
@@ -84,12 +74,6 @@ public class SeasonEndpointTest {
 
 	@Autowired
 	private SeasonService seasonService;
-
-	@Autowired
-	private PlaceRepository placeRepository;
-
-	@Autowired
-	private SeasonPlaceRepository seasonPlaceRepository;
 
 	@Autowired
 	@Rule
@@ -292,21 +276,5 @@ public class SeasonEndpointTest {
 								fieldWithPath("places").description("List of places available during the season"),
 								fieldWithPath("places[].placeCount").description("Number of places with placeType"),
 								fieldWithPath("places[].placeType").description("Place type"))));
-	}
-
-	private Place createPlace(final String name, final String type, final Organization organization) {
-		final Place place = new Place();
-		place.setName(name);
-		place.setType(type);
-		place.setOrganization(organization);
-		this.placeRepository.save(place);
-		return place;
-	}
-
-	private void createSeasonPlace(final Season season, final Place place) {
-		final SeasonPlace sp = new SeasonPlace();
-		sp.setSeason(season);
-		sp.setPlace(place);
-		this.seasonPlaceRepository.save(sp);
 	}
 }
