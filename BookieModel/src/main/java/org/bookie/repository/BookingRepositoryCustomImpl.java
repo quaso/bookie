@@ -3,9 +3,7 @@ package org.bookie.repository;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
@@ -17,7 +15,6 @@ import org.bookie.model.QBooking;
 import org.bookie.model.QOrganization;
 import org.bookie.model.QPlace;
 import org.bookie.model.QUser;
-import org.bookie.model.TimeSlot;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.querydsl.core.support.FetchableQueryBase;
@@ -35,44 +32,41 @@ public class BookingRepositoryCustomImpl implements BookingRepositoryCustom {
 	@Autowired
 	private BookingRepository bookingRepository;
 
-
 	@Override
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public  List<OwnerTimeSlot> findNoOwner(final String organizationName, final Date timeStart, final Date timeEnd,
-											  final Collection<String> types, final Collection<String> placeIds, final String ownerId){
-		return find(organizationName, timeStart, timeEnd, types, placeIds, ownerId, queryBase -> {
+	public List<OwnerTimeSlot> findNoOwner(final String organizationName, final Date timeStart, final Date timeEnd,
+			final Collection<String> types, final Collection<String> placeIds, final String ownerId) {
+		return this.find(organizationName, timeStart, timeEnd, types, placeIds, ownerId, queryBase -> {
 			return (JPAQueryBase) queryBase.select(
-					Projections.fields(Booking.class, QBooking.booking.timeStart, QBooking.booking.timeEnd, QBooking.booking.place));
+					Projections.fields(Booking.class, QBooking.booking.timeStart, QBooking.booking.timeEnd,
+							QBooking.booking.place));
 		});
 	}
 
-
 	@Override
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public  List<OwnerTimeSlot> findWithOwner(final String organizationName, final Date timeStart, final Date timeEnd,
+	public List<OwnerTimeSlot> findWithOwner(final String organizationName, final Date timeStart, final Date timeEnd,
 			final Collection<String> types, final Collection<String> placeIds, final String ownerId) {
 
-
-		return find(organizationName, timeStart, timeEnd, types, placeIds, ownerId, queryBase -> {
+		return this.find(organizationName, timeStart, timeEnd, types, placeIds, ownerId, queryBase -> {
 			return (JPAQueryBase) queryBase.select(
-					Projections.fields(Booking.class, QBooking.booking.timeStart, QBooking.booking.timeEnd, QBooking.booking.place,
-							QBooking.booking.owner));
+					Projections.fields(Booking.class, QBooking.booking.timeStart, QBooking.booking.timeEnd,
+							QBooking.booking.place, QBooking.booking.owner));
 		});
 	}
 
 	@Override
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public List<OwnerTimeSlot> findBooking(String organizationName, Date timeStart, Date timeEnd, Collection<String> types, Collection<String> placeIds, String ownerId) {
-		return find(organizationName, timeStart, timeEnd, types, placeIds, ownerId, queryBase -> {
+	public List<OwnerTimeSlot> findBooking(final String organizationName, final Date timeStart, final Date timeEnd,
+			final Collection<String> types, final Collection<String> placeIds, final String ownerId) {
+		return this.find(organizationName, timeStart, timeEnd, types, placeIds, ownerId, queryBase -> {
 			return queryBase;
 		});
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private List<OwnerTimeSlot> find(final String organizationName, final Date timeStart, final Date timeEnd,
-											  final Collection<String> types, final Collection<String> placeIds, final String ownerId,
-											  final Function<JPAQueryBase, JPAQueryBase> selectGenerator ) {
-
+			final Collection<String> types, final Collection<String> placeIds, final String ownerId,
+			final Function<JPAQueryBase, JPAQueryBase> selectGenerator) {
 
 		final QBooking qBooking = QBooking.booking;
 		final QOrganization qOrganization = QOrganization.organization;
