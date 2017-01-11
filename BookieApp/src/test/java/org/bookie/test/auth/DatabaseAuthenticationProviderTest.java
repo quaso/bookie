@@ -105,43 +105,6 @@ public class DatabaseAuthenticationProviderTest extends AbstractTest {
 		Assert.assertEquals(0, authResult.getAuthorities().size());
 	}
 
-	@Test
-	public void testValidToken() {
-		final String token = this.userService.createToken(this.user1);
-		final Authentication authResult = this.authenticate(this.user1.getUsername(), token, this.org1.getName());
-		Assert.assertNotNull(authResult);
-		Assert.assertTrue(authResult.isAuthenticated());
-		final Collection<Role> roles = this.orgUserRoles.get(this.org1.getName()).get(this.user1.getUsername());
-		Assert.assertEquals(roles.size() + 1, authResult.getAuthorities().size());
-		for (final Role role : roles) {
-			Assert.assertTrue(
-					authResult.getAuthorities().stream().anyMatch(ga -> ga.getAuthority().equals(role.getName())));
-		}
-		Assert.assertTrue(
-				authResult.getAuthorities().stream()
-						.anyMatch(ga -> ga.getAuthority().equals(org.bookie.auth.User.ROLE_TOKEN_USED)));
-		// check if token was cleared
-		final User dbUser1 = this.userService.findById(this.user1.getId());
-		Assert.assertNull(dbUser1.getOneTimeToken());
-	}
-
-	@Test
-	public void testValidPasswordAndToken() {
-		this.userService.createToken(this.user1);
-		final Authentication authResult = this.authenticate(this.user1.getUsername(), PASSWORD, this.org1.getName());
-		Assert.assertNotNull(authResult);
-		Assert.assertTrue(authResult.isAuthenticated());
-		final Collection<Role> roles = this.orgUserRoles.get(this.org1.getName()).get(this.user1.getUsername());
-		Assert.assertEquals(roles.size(), authResult.getAuthorities().size());
-		for (final Role role : roles) {
-			Assert.assertTrue(
-					authResult.getAuthorities().stream().anyMatch(ga -> ga.getAuthority().equals(role.getName())));
-		}
-		// check if token was cleared
-		final User dbUser1 = this.userService.findById(this.user1.getId());
-		Assert.assertNull(dbUser1.getOneTimeToken());
-	}
-
 	@Test(expected = AuthenticationException.class)
 	public void testWrongUsername() {
 		this.authenticate(this.user1.getUsername() + "a", PASSWORD, this.org1.getName());
@@ -149,6 +112,17 @@ public class DatabaseAuthenticationProviderTest extends AbstractTest {
 
 	@Test
 	public void testWrongPassword() {
+		try {
+			this.authenticate(this.user1.getUsername(), PASSWORD + "a", this.org1.getName());
+			Assert.fail("No exception was thrown");
+		} catch (final AuthenticationException ex) {
+			final User dbUser1 = this.userService.findByUsername(this.user1.getUsername()).get();
+			Assert.assertEquals(1, dbUser1.getFailedLogins());
+		}
+	}
+
+	@Test
+	public void testLock() {
 		for (int i = 1; i <= org.bookie.auth.User.MAX_INVALID_LOGINS + 2; i++) {
 			try {
 				this.authenticate(this.user1.getUsername(), PASSWORD + "a", this.org1.getName());
@@ -162,6 +136,44 @@ public class DatabaseAuthenticationProviderTest extends AbstractTest {
 				Assert.assertTrue(i <= org.bookie.auth.User.MAX_INVALID_LOGINS);
 			}
 		}
+		// test user2 is not affected
+		this.authenticate(this.user2.getUsername(), PASSWORD, this.org1.getName());
+		final User dbUser2 = this.userService.findByUsername(this.user2.getUsername()).get();
+		Assert.assertEquals(0, dbUser2.getFailedLogins());
+	}
+
+	@Test
+	public void testLockUnlock() {
+		User dbUser1;
+		for (int i = 1; i <= org.bookie.auth.User.MAX_INVALID_LOGINS + 2; i++) {
+			try {
+				this.authenticate(this.user1.getUsername(), PASSWORD + "a", this.org1.getName());
+				Assert.fail("No exception was thrown");
+			} catch (final LockedException ex) {
+				dbUser1 = this.userService.findByUsername(this.user1.getUsername()).get();
+				Assert.assertEquals(org.bookie.auth.User.MAX_INVALID_LOGINS, dbUser1.getFailedLogins());
+			} catch (final AuthenticationException ex) {
+				dbUser1 = this.userService.findByUsername(this.user1.getUsername()).get();
+				Assert.assertEquals(i, dbUser1.getFailedLogins());
+				Assert.assertTrue(i <= org.bookie.auth.User.MAX_INVALID_LOGINS);
+			}
+		}
+		final String newPwd = this.userService.resetPassword(this.user1);
+		dbUser1 = this.userService.findByUsername(this.user1.getUsername()).get();
+		Assert.assertEquals(0, dbUser1.getFailedLogins());
+
+		// test user2 is not affected
+		this.authenticate(this.user2.getUsername(), PASSWORD, this.org1.getName());
+		final User dbUser2 = this.userService.findByUsername(this.user2.getUsername()).get();
+		Assert.assertEquals(0, dbUser2.getFailedLogins());
+
+		try {
+			this.authenticate(this.user1.getUsername(), newPwd, this.org1.getName());
+		} catch (final AuthenticationException ex) {
+			dbUser1 = this.userService.findByUsername(this.user1.getUsername()).get();
+			Assert.assertEquals(1, dbUser1.getFailedLogins());
+		}
+
 	}
 
 	@Test
@@ -173,26 +185,6 @@ public class DatabaseAuthenticationProviderTest extends AbstractTest {
 			// user cannot be locked by empty password
 			final User dbUser1 = this.userService.findByUsername(this.user1.getUsername()).get();
 			Assert.assertEquals(0, dbUser1.getFailedLogins());
-		}
-	}
-
-	@Test
-	public void testWrongToken() {
-		final String token = this.userService.createToken(this.user1);
-		try {
-			this.authenticate(this.user1.getUsername(), token + "a", this.org1.getName());
-			Assert.fail("No exception was thrown");
-		} catch (final AuthenticationException ex) {
-			final User dbUser1 = this.userService.findByUsername(this.user1.getUsername()).get();
-			Assert.assertEquals(1, dbUser1.getFailedLogins());
-		}
-
-		// user should be locked after first unsuccessfull attempt
-		try {
-			this.authenticate(this.user1.getUsername(), token, this.org1.getName());
-		} catch (final LockedException ex) {
-			final User dbUser1 = this.userService.findByUsername(this.user1.getUsername()).get();
-			Assert.assertEquals(1, dbUser1.getFailedLogins());
 		}
 	}
 

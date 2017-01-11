@@ -37,34 +37,11 @@ public class DatabaseAuthenticationProvider extends AbstractUserDetailsAuthentic
 					.getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad credentials"));
 		}
 
-		final String presentedPassword = authentication.getCredentials().toString();
-		final String oneTimeToken = user.getDbUser().getOneTimeToken();
-
-		if (this.passwordEncoder.matches(presentedPassword, user.getPassword())) {
-			// user authenticated with password
-			// clear token if there is some
-			if (!StringUtils.isEmpty(oneTimeToken)) {
-				this.userService.clearToken(user.getDbUser());
-			}
-		} else {
+		if (!this.passwordEncoder.matches(authentication.getCredentials().toString(), user.getPassword())) {
 			// user NOT authenticated with password
-			boolean error = true;
-
-			if (!StringUtils.isEmpty(oneTimeToken)) {
-				// check token
-				user.setTokenUsed(true);
-				if (this.passwordEncoder.matches(presentedPassword, user.getDbUser().getOneTimeToken())) {
-					// one time token matches
-					this.userService.clearToken(user.getDbUser());
-					error = false;
-				}
-			}
-
-			if (error) {
-				this.logger.debug("Authentication failed: password does not match stored value");
-				throw new BadCredentialsException(this.messages
-						.getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad credentials"));
-			}
+			this.logger.debug("Authentication failed: password does not match stored value");
+			throw new BadCredentialsException(this.messages
+					.getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad credentials"));
 		}
 	}
 

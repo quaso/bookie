@@ -32,9 +32,20 @@ public class UserService {
 
 	public User createUser(final User user) {
 		// TODO: add more here ? :)
-		user.setPassword(this.passwordEncoder.encode(user.getPassword()));
+		this.setPasswordInternal(user, user.getPassword());
+		return this.userRepository.save(user);
+	}
+
+	public String resetPassword(final User user) {
+		final String pwd = RandomStringUtils.random(10, 0, 0, true, true);
+		this.setPasswordInternal(user, pwd);
 		this.userRepository.save(user);
-		return user;
+		return pwd;
+	}
+
+	private void setPasswordInternal(final User user, final String password) {
+		user.setPassword(this.passwordEncoder.encode(password));
+		user.setFailedLogins(0);
 	}
 
 	public User findById(final String id) {
@@ -52,19 +63,6 @@ public class UserService {
 			throw new UserNotFoundException(user.getId());
 		}
 		this.userRepository.save(user);
-	}
-
-	public void clearToken(final User user) {
-		user.setOneTimeToken(null);
-		this.userRepository.save(user);
-	}
-
-	public String createToken(final User user) {
-		final String token = RandomStringUtils.random(10, 0, 0, true, true);
-		user.setOneTimeToken(this.passwordEncoder.encode(token));
-		user.setFailedLogins(0);
-		this.userRepository.save(user);
-		return token;
 	}
 
 	public Optional<User> findByUsername(final String username) {

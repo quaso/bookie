@@ -38,9 +38,6 @@ public class User extends AbstractEntity {
 	@Column(name = "password", nullable = false)
 	private String password;
 
-	@Column(name = "oneTimeToken", nullable = true)
-	private String oneTimeToken;
-
 	@Column(name = "failedLogins", nullable = true)
 	private int failedLogins;
 
@@ -119,14 +116,6 @@ public class User extends AbstractEntity {
 
 	public void setPassword(final String password) {
 		this.password = password;
-	}
-
-	public String getOneTimeToken() {
-		return this.oneTimeToken;
-	}
-
-	public void setOneTimeToken(final String oneTimeToken) {
-		this.oneTimeToken = oneTimeToken;
 	}
 
 	public int getFailedLogins() {

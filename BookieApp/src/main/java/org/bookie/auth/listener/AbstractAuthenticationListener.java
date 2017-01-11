@@ -1,4 +1,4 @@
-package org.bookie.auth;
+package org.bookie.auth.listener;
 
 import org.bookie.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;

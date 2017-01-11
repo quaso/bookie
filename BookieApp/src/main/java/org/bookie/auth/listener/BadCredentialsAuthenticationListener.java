@@ -1,4 +1,4 @@
-package org.bookie.auth;
+package org.bookie.auth.listener;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.authentication.event.AuthenticationFailureBadCredentialsEvent;
