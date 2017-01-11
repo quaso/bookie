@@ -58,9 +58,6 @@ public class Booking extends AbstractEntity implements OwnerTimeSlot {
 	@org.hibernate.annotations.Cascade({ org.hibernate.annotations.CascadeType.LOCK })
 	@JoinColumns({ @JoinColumn(name = "owner", referencedColumnName = "id", nullable = false) })
 	private User owner;
-	//
-	//	@Column(name = "ownerId", nullable = false)
-	//	private String ownerId;
 
 	@Override
 	public Date getTimeStart() {
