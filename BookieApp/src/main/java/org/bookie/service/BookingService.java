@@ -103,9 +103,16 @@ public class BookingService {
 					.anyMatch(ga -> ga.getAuthority().equals("ROLE_ADMIN")
 							|| ga.getAuthority().equals("ROLE_SUPER_ADMIN"));
 		}
-		final Class<? extends OwnerTimeSlot> clazz = admin ? Booking.class : OwnerTimeSlot.class;
-		final List<? extends OwnerTimeSlot> list = this.bookingRepository.find(organizationName, timeStart, timeEnd,
-				types, placeIds, ownerId, clazz);
+//		final Class<OwnerTimeSlot> clazz = admin ? Booking.class : OwnerTimeSlot.class;
+		final List<OwnerTimeSlot> list;
+		if (admin){
+			list = this.bookingRepository.findWithOwner(organizationName, timeStart, timeEnd,
+					types, placeIds, ownerId);
+		}else{
+			list = this.bookingRepository.findNoOwner(organizationName, timeStart, timeEnd,
+					types, placeIds, ownerId);
+		}
+
 		if (!admin) {
 			// remove user info for other owners
 			final String userId = authentication != null ? this.extractDbUserFromAuth(authentication).getId() : null;
@@ -137,8 +144,7 @@ public class BookingService {
 			final Date end = Date
 					.from(date.atStartOfDay().plusMinutes(minutesEnd).atZone(ZoneId.systemDefault()).toInstant());
 			// get existing bookings which are in desired time frame
-			final List<TimeSlot> timeSlots = this.bookingRepository.find(organizationName, start, end, null, null, null,
-					TimeSlot.class);
+			final List<OwnerTimeSlot> timeSlots = this.bookingRepository.findNoOwner(organizationName, start, end, null, null, null);
 
 			if (timeSlots.isEmpty()) {
 				// there are no booking at this day

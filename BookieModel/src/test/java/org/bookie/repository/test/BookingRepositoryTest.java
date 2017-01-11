@@ -99,9 +99,9 @@ public class BookingRepositoryTest {
 	@Test
 	public void testFindOneTimeSlot() {
 		// search by type (one result) timeslot only
-		final List<? extends TimeSlot> temp = this.bookingRepository.find(this.org.getName(),
+		final List<? extends TimeSlot> temp = this.bookingRepository.findNoOwner(this.org.getName(),
 				this.date(this.now.atTime(10, 0)), this.date(this.now.atTime(14, 0)),
-				Arrays.asList("ttt"), null, null, TimeSlot.class);
+				Arrays.asList("ttt"), null, null);
 		Assert.assertEquals(1, temp.size());
 		Assert.assertNull(((Booking) temp.get(0)).getOwner());
 	}
@@ -109,9 +109,9 @@ public class BookingRepositoryTest {
 	@Test
 	public void testFindOneOwnerTimeSlot() {
 		// search by type (one result) timeslot only
-		final List<? extends TimeSlot> temp = this.bookingRepository.find(this.org.getName(),
+		final List<? extends TimeSlot> temp = this.bookingRepository.findWithOwner(this.org.getName(),
 				this.date(this.now.atTime(10, 0)), this.date(this.now.atTime(14, 0)),
-				Arrays.asList("ttt"), null, null, OwnerTimeSlot.class);
+				Arrays.asList("ttt"), null, null);
 		Assert.assertEquals(1, temp.size());
 		Assert.assertNotNull(((Booking) temp.get(0)).getOwner());
 		Assert.assertNull(((Booking) temp.get(0)).getType());
@@ -120,9 +120,9 @@ public class BookingRepositoryTest {
 	@Test
 	public void testFindOneBooking() {
 		// search by type (one result) whole booking
-		final List<? extends TimeSlot> temp = this.bookingRepository.find(this.org.getName(),
+		final List<? extends TimeSlot> temp = this.bookingRepository.findBooking(this.org.getName(),
 				this.date(this.now.atTime(10, 0)), this.date(this.now.atTime(14, 0)),
-				Arrays.asList("ttt"), null, null, Booking.class);
+				Arrays.asList("ttt"), null, null);
 		Assert.assertEquals(1, temp.size());
 		Assert.assertNotNull(((Booking) temp.get(0)).getOwner());
 		Assert.assertNotNull(((Booking) temp.get(0)).getType());
@@ -131,74 +131,72 @@ public class BookingRepositoryTest {
 	@Test
 	public void testFindMore() {
 		// search by type (more results)
-		final List<? extends TimeSlot> temp = this.bookingRepository.find(this.org.getName(),
+		final List<? extends TimeSlot> temp = this.bookingRepository.findNoOwner(this.org.getName(),
 				this.date(this.now.atTime(10, 0)), this.date(this.now.atTime(14, 0)),
-				Arrays.asList("zzz"), null, null, TimeSlot.class);
+				Arrays.asList("zzz"), null, null);
 		Assert.assertEquals(3, temp.size());
 	}
 
 	@Test
 	public void testFindMore2() {
 		// search by more types (existing and non-existing)
-		final List<? extends TimeSlot> temp = this.bookingRepository.find(this.org.getName(),
+		final List<? extends TimeSlot> temp = this.bookingRepository.findNoOwner(this.org.getName(),
 				this.date(this.now.atTime(11, 0)), this.date(this.now.atTime(14, 0)),
-				Arrays.asList("ttt", "zzz", "yyy"), null, null, TimeSlot.class);
+				Arrays.asList("ttt", "zzz", "yyy"), null, null);
 		Assert.assertEquals(3, temp.size());
 	}
 
 	@Test
 	public void testFindEmpty() {
 		// search by time (no result)
-		final List<? extends TimeSlot> temp = this.bookingRepository.find(this.org.getName(),
+		final List<? extends TimeSlot> temp = this.bookingRepository.findNoOwner(this.org.getName(),
 				this.date(this.now.atTime(11, 0)), this.date(this.now.atTime(12, 0)),
-				Arrays.asList("ttt", "zzz", "yyy"), null, null, TimeSlot.class);
+				Arrays.asList("ttt", "zzz", "yyy"), null, null);
 		Assert.assertEquals(0, temp.size());
 	}
 
 	@Test
 	public void testFindMiddle() {
 		// search by time (two incomplete bookings)
-		final List<? extends TimeSlot> temp = this.bookingRepository.find(this.org.getName(),
+		final List<? extends TimeSlot> temp = this.bookingRepository.findNoOwner(this.org.getName(),
 				this.date(this.now.atTime(13, 0)), this.date(this.now.atTime(13, 30)),
-				Arrays.asList("ttt", "zzz", "yyy"), null, null, TimeSlot.class);
+				Arrays.asList("ttt", "zzz", "yyy"), null, null);
 		Assert.assertEquals(2, temp.size());
 	}
 
 	@Test
 	public void testFindUserId() {
 		// search by userId
-		final List<? extends TimeSlot> temp = this.bookingRepository.find(this.org.getName(),
+		final List<? extends TimeSlot> temp = this.bookingRepository.findNoOwner(this.org.getName(),
 				this.date(this.now.atTime(10, 0)), this.date(this.now.atTime(14, 0)),
-				Arrays.asList("ttt", "zzz", "yyy"), null, this.user2.getId(), TimeSlot.class);
+				Arrays.asList("ttt", "zzz", "yyy"), null, this.user2.getId());
 		Assert.assertEquals(1, temp.size());
 	}
 
 	@Test
 	public void testFindPlaceId() {
 		// search by placeId
-		final List<? extends TimeSlot> temp = this.bookingRepository.find(this.org.getName(),
+		final List<? extends TimeSlot> temp = this.bookingRepository.findNoOwner(this.org.getName(),
 				this.date(this.now.atTime(10, 0)), this.date(this.now.atTime(14, 0)),
-				Arrays.asList("ttt", "zzz", "yyy"), Arrays.asList(this.place1.getId()), null, TimeSlot.class);
+				Arrays.asList("ttt", "zzz", "yyy"), Arrays.asList(this.place1.getId()), null);
 		Assert.assertEquals(3, temp.size());
 	}
 
 	@Test
 	public void testFindUserIdPlaceId() {
 		// search by userId and placeId
-		final List<? extends TimeSlot> temp = this.bookingRepository.find(this.org.getName(),
+		final List<? extends TimeSlot> temp = this.bookingRepository.findNoOwner(this.org.getName(),
 				this.date(this.now.atTime(10, 0)), this.date(this.now.atTime(14, 0)),
-				Arrays.asList("ttt", "zzz", "yyy"), Arrays.asList(this.place1.getId()), this.user1.getId(),
-				TimeSlot.class);
+				Arrays.asList("ttt", "zzz", "yyy"), Arrays.asList(this.place1.getId()), this.user1.getId());
 		Assert.assertEquals(2, temp.size());
 	}
 
 	@Test
 	public void testFindEmptyUserIdPlaceId() {
 		// search by userId and placeId (no result)
-		final List<? extends TimeSlot> temp = this.bookingRepository.find(this.org.getName(),
+		final List<? extends TimeSlot> temp = this.bookingRepository.findNoOwner(this.org.getName(),
 				this.date(this.now.atTime(10, 0)), this.date(this.now.atTime(14, 0)),
-				Arrays.asList("ttt", "zzz", "yyy"), Arrays.asList(this.place2.getId()), this.user2.getId(),
-				TimeSlot.class);
+				Arrays.asList("ttt", "zzz", "yyy"), Arrays.asList(this.place2.getId()), this.user2.getId());
 		Assert.assertEquals(0, temp.size());
 	}
 
