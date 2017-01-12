@@ -6,10 +6,10 @@ import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 
-import org.apache.commons.lang3.StringUtils;
 import org.bookie.exception.UserContactsBlankException;
 
-import net.minidev.json.annotate.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
 @Entity
 @org.hibernate.annotations.Proxy(lazy = false)
@@ -38,9 +38,11 @@ public class User extends AbstractEntity {
 	private boolean verified = false;
 
 	@Column(name = "password", nullable = false)
+	@JsonProperty(access = Access.WRITE_ONLY)
 	private String password;
 
 	@Column(name = "failedLogins", nullable = true)
+	@JsonProperty(access = Access.READ_ONLY)
 	private int failedLogins;
 
 	@PrePersist
@@ -51,7 +53,8 @@ public class User extends AbstractEntity {
 
 	@PreUpdate
 	public void preUpdate() {
-		if (StringUtils.isBlank(this.phone) && StringUtils.isBlank(this.email)) {
+		if ((this.phone == null || this.phone.trim().length() == 0)
+				&& (this.email == null || this.email.trim().length() == 0)) {
 			throw new UserContactsBlankException();
 		}
 	}
@@ -108,11 +111,10 @@ public class User extends AbstractEntity {
 		this.verified = value;
 	}
 
-	public boolean getVerified() {
+	public boolean isVerified() {
 		return this.verified;
 	}
 
-	@JsonIgnore
 	public String getPassword() {
 		return this.password;
 	}
@@ -125,7 +127,6 @@ public class User extends AbstractEntity {
 		return this.failedLogins;
 	}
 
-	@JsonIgnore
 	public void setFailedLogins(final int failedLogins) {
 		this.failedLogins = failedLogins;
 	}
@@ -136,5 +137,4 @@ public class User extends AbstractEntity {
 				+ this.phone + ", email=" + this.email + ", enabled=" + this.enabled + ", verified=" + this.verified
 				+ ", failedLogins=" + this.failedLogins + "]";
 	}
-
 }

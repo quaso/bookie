@@ -36,7 +36,7 @@ public class SeasonServiceTest extends AbstractTest {
 		Date end = Date.from(
 				now.withDayOfMonth(1).plusMonths(1).atStartOfDay(ZoneId.systemDefault()).minusMinutes(1).toInstant());
 
-		final Season season = this.createSeason(start, end, "test 1", "aaa,bbb", this.org);
+		final Season season = this.createSeason(start, end, "test 1", this.org);
 
 		final Place t1 = this.createPlace("1", "aaa", this.org);
 		final Place t2 = this.createPlace("2", "aaa", this.org);
@@ -54,7 +54,7 @@ public class SeasonServiceTest extends AbstractTest {
 		end = Date.from(now.plusYears(1).withDayOfMonth(1).plusMonths(1).atStartOfDay(ZoneId.systemDefault())
 				.minusMinutes(1).toInstant());
 
-		final Season season2 = this.createSeason(start, end, "test 2", "aaa", this.org);
+		final Season season2 = this.createSeason(start, end, "test 2", this.org);
 		this.createSeasonPlace(season2, t2);
 		this.createSeasonPlace(season2, t3);
 
@@ -114,7 +114,7 @@ public class SeasonServiceTest extends AbstractTest {
 				now.minusMonths(1).withDayOfMonth(1).plusMonths(1).atStartOfDay(ZoneId.systemDefault()).minusMinutes(1)
 						.toInstant());
 
-		this.createSeason(start, end, "test 1", "aaa,bbb", this.org);
+		this.createSeason(start, end, "test 1", this.org);
 
 		final SeasonDetails seasonDetails = this.seasonService.getDetailsByDate(this.org.getName(),
 				Date.from(LocalDateTime.now().minusMonths(2).atZone(ZoneId.systemDefault()).toInstant()));

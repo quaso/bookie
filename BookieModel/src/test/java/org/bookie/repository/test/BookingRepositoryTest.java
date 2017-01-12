@@ -7,7 +7,6 @@ import java.util.List;
 
 import org.bookie.model.Booking;
 import org.bookie.model.Organization;
-import org.bookie.model.OwnerTimeSlot;
 import org.bookie.model.Place;
 import org.bookie.model.Role;
 import org.bookie.model.Season;
@@ -35,7 +34,7 @@ public class BookingRepositoryTest extends AbstractTest {
 		final Date start = this.date(this.now.withDayOfMonth(1).atStartOfDay());
 		final Date end = this.date(this.now.withDayOfMonth(1).plusMonths(1).atStartOfDay().minusMinutes(1));
 
-		final Season season = this.createSeason(start, end, "season1", "aaa,bbb", this.org);
+		final Season season = this.createSeason(start, end, "season1", this.org);
 		this.place1 = this.createPlace("p1", "aaa", this.org);
 		this.createSeasonPlace(season, this.place1);
 		this.place2 = this.createPlace("p2", "aaa", this.org);

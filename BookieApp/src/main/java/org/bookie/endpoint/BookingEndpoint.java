@@ -1,6 +1,5 @@
 package org.bookie.endpoint;
 
-import java.net.URI;
 import java.time.LocalDate;
 import java.util.Set;
 
@@ -22,7 +21,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @RestController
 @RequestMapping("/api/booking")
@@ -37,12 +35,7 @@ public class BookingEndpoint {
 		final Booking result = this.bookingService.createBooking(booking.getTimeStart(), booking.getTimeEnd(),
 				booking.getType(), booking.getOwnerId(), booking.getPlaceId(), booking.getNote());
 
-		final URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
-				.buildAndExpand(result.getId()).toUri();
-
-		final ResponseEntity<Booking> response = new ResponseEntity<>(result, HttpStatus.CREATED);
-		response.getHeaders().setLocation(location);
-		return response;
+		return new ResponseEntity<>(result, HttpStatus.CREATED);
 	}
 
 	@RequestMapping(method = RequestMethod.GET, value = "/findFree/")

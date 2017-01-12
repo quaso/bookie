@@ -2,14 +2,22 @@ package org.bookie.model;
 
 public class PlacesInfo {
 
-	private int placeCount;
+	private long placeCount;
 	private String placeType;
 
-	public int getPlaceCount() {
+	public PlacesInfo() {
+	}
+
+	public PlacesInfo(final String placeType, final long placeCount) {
+		this.placeType = placeType;
+		this.placeCount = placeCount;
+	}
+
+	public long getPlaceCount() {
 		return this.placeCount;
 	}
 
-	public void setPlaceCount(final int placeCount) {
+	public void setPlaceCount(final long placeCount) {
 		this.placeCount = placeCount;
 	}
 

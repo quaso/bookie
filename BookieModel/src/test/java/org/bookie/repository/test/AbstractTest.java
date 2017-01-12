@@ -65,7 +65,7 @@ public abstract class AbstractTest {
 		return this.organizationRepository.save(org);
 	}
 
-	protected final Season createSeason(final Date start, final Date end, final String name, final String types,
+	protected final Season createSeason(final Date start, final Date end, final String name,
 			final Organization organization) {
 		final Season season = new Season();
 		season.setDateStart(start);
@@ -73,7 +73,6 @@ public abstract class AbstractTest {
 		season.setTimeStart(7 * 60);
 		season.setTimeEnd(22 * 60);
 		season.setName(name);
-		season.setTypes(types);
 		season.setOrganization(organization);
 		return this.seasonRepository.save(season);
 	}

@@ -37,11 +37,6 @@ public class Season extends AbstractEntity {
 	@Column(name = "timeEnd", nullable = false)
 	private int timeEnd;
 
-	// @JsonIgnore
-	// TODO: List<> ???
-	@Column(name = "types", nullable = false, length = 255)
-	private String types;
-
 	@ManyToOne(targetEntity = Organization.class, fetch = FetchType.LAZY)
 	@org.hibernate.annotations.Cascade({ org.hibernate.annotations.CascadeType.LOCK })
 	@JoinColumns({ @JoinColumn(name = "organizationId", referencedColumnName = "id", nullable = false) })
@@ -99,14 +94,6 @@ public class Season extends AbstractEntity {
 		return this.timeEnd;
 	}
 
-	public String getTypes() {
-		return this.types;
-	}
-
-	public void setTypes(final String types) {
-		this.types = types;
-	}
-
 	public Organization getOrganization() {
 		return this.organization;
 	}
@@ -118,7 +105,7 @@ public class Season extends AbstractEntity {
 	@Override
 	public String toString() {
 		return "Season [name=" + this.name + ", dateStart=" + this.dateStart + ", dateEnd=" + this.dateEnd
-				+ ", timeStart=" + this.timeStart + ", timeEnd=" + this.timeEnd + ", types=" + this.types + "]";
+				+ ", timeStart=" + this.timeStart + ", timeEnd=" + this.timeEnd + "]";
 	}
 
 }

@@ -64,7 +64,7 @@ public class BookingServiceTest extends AbstractTest {
 		final Date end = Date.from(this.now.withDayOfMonth(1).plusMonths(1).atStartOfDay(ZoneId.systemDefault())
 				.minusMinutes(1).toInstant());
 
-		this.season = this.createSeason(start, end, "test", "aaa,bbb", this.org);
+		this.season = this.createSeason(start, end, "test", this.org);
 
 		this.t1 = this.createPlace("1", "aaa", this.org);
 		this.t2 = this.createPlace("2", "aaa", this.org);

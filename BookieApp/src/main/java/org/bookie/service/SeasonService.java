@@ -4,7 +4,6 @@ import java.util.Date;
 
 import javax.transaction.Transactional;
 
-import org.bookie.model.PlacesInfo;
 import org.bookie.model.Season;
 import org.bookie.model.SeasonDetails;
 import org.bookie.repository.SeasonPlaceRepository;
@@ -46,16 +45,8 @@ public class SeasonService {
 		final Season currentSeason = this.getByDate(organizationName, date);
 
 		if (currentSeason != null) {
-			result = new SeasonDetails(currentSeason);
-			final String[] placeTypes = currentSeason.getTypes().split(",");
-			for (final String placeType : placeTypes) {
-				final PlacesInfo pi = new PlacesInfo();
-				pi.setPlaceType(placeType);
-				final long count = this.seasonPlaceRepository
-						.countBySeasonIdEqualsAndPlaceTypeEquals(currentSeason.getId(), placeType);
-				pi.setPlaceCount((int) count);
-				result.getPlaces().add(pi);
-			}
+			result = new SeasonDetails(currentSeason,
+					this.seasonPlaceRepository.findPlacesCountForSeason(currentSeason.getId()));
 		}
 
 		return result;

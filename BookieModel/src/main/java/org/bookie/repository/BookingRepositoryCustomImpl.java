@@ -8,6 +8,7 @@ import java.util.function.Function;
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
 import javax.persistence.PersistenceContext;
+import javax.transaction.Transactional;
 
 import org.bookie.model.Booking;
 import org.bookie.model.OwnerTimeSlot;
@@ -24,6 +25,7 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPAQueryBase;
 import com.querydsl.jpa.impl.JPAQuery;
 
+@Transactional
 public class BookingRepositoryCustomImpl implements BookingRepositoryCustom {
 
 	@PersistenceContext

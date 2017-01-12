@@ -2,14 +2,8 @@ package org.bookie.test.endpoint;
 
 import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
 import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
-import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
@@ -32,42 +26,14 @@ import org.bookie.model.Place;
 import org.bookie.model.Season;
 import org.bookie.service.OrganizationService;
 import org.bookie.service.SeasonService;
-import org.bookie.test.AbstractTest;
-import org.bookie.test.conf.WebTestConfiguration;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.restdocs.JUnitRestDocumentation;
-import org.springframework.restdocs.cli.CliDocumentation;
 import org.springframework.restdocs.headers.RequestHeadersSnippet;
-import org.springframework.restdocs.http.HttpDocumentation;
-import org.springframework.restdocs.mockmvc.RestDocumentationResultHandler;
 import org.springframework.restdocs.payload.FieldDescriptor;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
 
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
-@Import(WebTestConfiguration.class)
-public class SeasonEndpointTest extends AbstractTest {
-
-	@Autowired
-	private WebApplicationContext wac;
-
-	private MockMvc mockMvc;
-
-	@Autowired
-	private ObjectMapper objectMapper;
-
-	private RestDocumentationResultHandler restDocumentationResultHandler;
+public class SeasonEndpointTest extends AbstractEndpointTest {
 
 	@Autowired
 	private OrganizationService organizationService;
@@ -75,26 +41,12 @@ public class SeasonEndpointTest extends AbstractTest {
 	@Autowired
 	private SeasonService seasonService;
 
-	@Autowired
-	@Rule
-	public JUnitRestDocumentation restDocumentation;
-
 	private RequestHeadersSnippet requestHeaders;
 
+	@Override
 	@Before
-	public void setUp() {
-		this.restDocumentationResultHandler = document("{method-name}", preprocessRequest(prettyPrint()),
-				preprocessResponse(prettyPrint()));
-
-		this.mockMvc = MockMvcBuilders.webAppContextSetup(this.wac)
-				.apply(documentationConfiguration(this.restDocumentation).snippets().withDefaults(
-						CliDocumentation.curlRequest(), HttpDocumentation.httpRequest(),
-						HttpDocumentation.httpResponse()))
-				.alwaysDo(this.restDocumentationResultHandler)
-				.build();
-
-		this.objectMapper.setSerializationInclusion(Include.NON_NULL);
-
+	public void init() {
+		super.init();
 		this.requestHeaders = requestHeaders(
 				headerWithName(OrganizationWebAuthenticationDetails.HEADER_ORGANIZATION_NAME)
 						.description("Organization name")
@@ -122,23 +74,18 @@ public class SeasonEndpointTest extends AbstractTest {
 		request.setTimeStart(7 * 60);
 		request.setTimeEnd(22 * 60);
 		request.setName("season 1");
-		request.setTypes("aaa,bbb");
 
 		final List<FieldDescriptor> requestFields = Arrays.asList(
-				fieldWithPath("dateStart").description("Start of the season"),
-				fieldWithPath("dateEnd").description("End of the season"),
-				fieldWithPath("timeStart")
-						.description("Minimal time, when booking can start (\"in minutes\")"),
-				fieldWithPath("timeEnd")
-						.description("Maximal time, when booking can end (\"in minutes\")"),
-				fieldWithPath("name").description("User readable name of the season")
-						.attributes(key("unique").value("Yes")),
-				fieldWithPath("types").description("comma separated list of place types supported in the season"));
+				this.fieldWithPath("dateStart", "Start of the season"),
+				this.fieldWithPath("dateEnd", "End of the season"),
+				this.fieldWithPath("timeStart", "Minimal time, when booking can start (\"in minutes\")"),
+				this.fieldWithPath("timeEnd", "Maximal time, when booking can end (\"in minutes\")"),
+				this.fieldWithPath("name", "User readable name of the season", new String[] { "unique", "Yes" }));
 
 		final List<FieldDescriptor> responseFields = new ArrayList<>();
 		responseFields.addAll(Arrays.asList(
-				fieldWithPath("id").description("Season id"),
-				fieldWithPath("organization").description("Organization entity")));
+				this.fieldWithPath("id", "Season id"),
+				this.fieldWithPath("organization", "Organization entity")));
 		responseFields.addAll(requestFields);
 
 		this.mockMvc
@@ -172,7 +119,6 @@ public class SeasonEndpointTest extends AbstractTest {
 		season.setTimeStart(7 * 60);
 		season.setTimeEnd(22 * 60);
 		season.setName("season 1");
-		season.setTypes("aaa,bbb");
 		season.setOrganization(org);
 		this.seasonService.createSeason(season);
 
@@ -196,21 +142,19 @@ public class SeasonEndpointTest extends AbstractTest {
 				.andExpect(status().isOk())
 				.andDo(this.restDocumentationResultHandler.document(
 						this.requestHeaders,
-						responseFields(fieldWithPath("season").description("Season entity for current date"),
-								fieldWithPath("season.dateStart").description("Start of the season"),
-								fieldWithPath("season.dateEnd").description("End of the season"),
-								fieldWithPath("season.timeStart")
-										.description("Minimal time, when booking can start (\"in minutes\")"),
-								fieldWithPath("season.timeEnd")
-										.description("Maximal time, when booking can end (\"in minutes\")"),
-								fieldWithPath("season.name").description("User readable name of the season")
-										.attributes(key("unique").value("Yes")),
-								fieldWithPath("season.types")
-										.description("comma separated list of place types supported in the season"),
-								fieldWithPath("season.id").description("Season id"),
-								fieldWithPath("places").description("List of places available during the season"),
-								fieldWithPath("places[].placeCount").description("Number of places with placeType"),
-								fieldWithPath("places[].placeType").description("Place type"))));
+						responseFields(this.fieldWithPath("season", "Season entity for current date"),
+								this.fieldWithPath("season.dateStart", "Start of the season"),
+								this.fieldWithPath("season.dateEnd", "End of the season"),
+								this.fieldWithPath("season.timeStart",
+										"Minimal time, when booking can start (\"in minutes\")"),
+								this.fieldWithPath("season.timeEnd",
+										"Maximal time, when booking can end (\"in minutes\")"),
+								this.fieldWithPath("season.name", "User readable name of the season",
+										new String[] { "unique", "Yes" }),
+								this.fieldWithPath("season.id", "Season id"),
+								this.fieldWithPath("places", "List of places available during the season"),
+								this.fieldWithPath("places[].placeCount", "Number of places with placeType"),
+								this.fieldWithPath("places[].placeType", "Place type"))));
 	}
 
 	@Test
@@ -232,7 +176,6 @@ public class SeasonEndpointTest extends AbstractTest {
 		season.setTimeStart(7 * 60);
 		season.setTimeEnd(22 * 60);
 		season.setName("season 1");
-		season.setTypes("aaa,bbb");
 		season.setOrganization(org);
 		this.seasonService.createSeason(season);
 
@@ -261,20 +204,18 @@ public class SeasonEndpointTest extends AbstractTest {
 						pathParameters(
 								parameterWithName("date")
 										.description("Date in ISO-8601 basic local date format (yyyyMMdd)")),
-						responseFields(fieldWithPath("season").description("Season entity for current date"),
-								fieldWithPath("season.dateStart").description("Start of the season"),
-								fieldWithPath("season.dateEnd").description("End of the season"),
-								fieldWithPath("season.timeStart")
-										.description("Minimal time, when booking can start (\"in minutes\")"),
-								fieldWithPath("season.timeEnd")
-										.description("Maximal time, when booking can end (\"in minutes\")"),
-								fieldWithPath("season.name").description("User readable name of the season")
-										.attributes(key("unique").value("Yes")),
-								fieldWithPath("season.types")
-										.description("comma separated list of place types supported in the season"),
-								fieldWithPath("season.id").description("Season id"),
-								fieldWithPath("places").description("List of places available during the season"),
-								fieldWithPath("places[].placeCount").description("Number of places with placeType"),
-								fieldWithPath("places[].placeType").description("Place type"))));
+						responseFields(this.fieldWithPath("season", "Season entity for current date"),
+								this.fieldWithPath("season.dateStart", "Start of the season"),
+								this.fieldWithPath("season.dateEnd", "End of the season"),
+								this.fieldWithPath("season.timeStart",
+										"Minimal time, when booking can start (\"in minutes\")"),
+								this.fieldWithPath("season.timeEnd",
+										"Maximal time, when booking can end (\"in minutes\")"),
+								this.fieldWithPath("season.name", "User readable name of the season",
+										new String[] { "unique", "Yes" }),
+								this.fieldWithPath("season.id", "Season id"),
+								this.fieldWithPath("places", "List of places available during the season"),
+								this.fieldWithPath("places[].placeCount", "Number of places with placeType"),
+								this.fieldWithPath("places[].placeType", "Place type"))));
 	}
 }
