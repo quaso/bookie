@@ -60,9 +60,15 @@ public class UserService {
 		Assert.notNull(user, "User cannot be empty");
 		Assert.notNull(user.getId(), "UserId cannot be empty");
 		if (!this.userRepository.exists(user.getId())) {
-			throw new UserNotFoundException(user.getId());
+			throw new UserNotFoundException(user.getId(), null);
 		}
 		this.userRepository.save(user);
+	}
+
+	public void disableUser(final String username) throws UserNotFoundException {
+		final User user = this.findByUsername(username).orElseThrow(() -> new UserNotFoundException(null, username));
+		user.setEnabled(false);
+		this.updateUser(user);
 	}
 
 	public Optional<User> findByUsername(final String username) {

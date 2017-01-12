@@ -9,9 +9,11 @@ import javax.persistence.Table;
 import org.apache.commons.lang3.StringUtils;
 import org.bookie.exception.UserContactsBlankException;
 
+import net.minidev.json.annotate.JsonIgnore;
+
 @Entity
 @org.hibernate.annotations.Proxy(lazy = false)
-@Table(name = "`User`")
+@Table(name = "BookieUser")
 public class User extends AbstractEntity {
 
 	@Column(name = "username", nullable = false, unique = true)
@@ -110,6 +112,7 @@ public class User extends AbstractEntity {
 		return this.verified;
 	}
 
+	@JsonIgnore
 	public String getPassword() {
 		return this.password;
 	}
@@ -122,6 +125,7 @@ public class User extends AbstractEntity {
 		return this.failedLogins;
 	}
 
+	@JsonIgnore
 	public void setFailedLogins(final int failedLogins) {
 		this.failedLogins = failedLogins;
 	}
