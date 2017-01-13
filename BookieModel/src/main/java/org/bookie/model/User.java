@@ -8,12 +8,14 @@ import javax.persistence.Table;
 
 import org.bookie.exception.UserContactsBlankException;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
 @Entity
 @org.hibernate.annotations.Proxy(lazy = false)
 @Table(name = "BookieUser")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class User extends AbstractEntity {
 
 	@Column(name = "username", nullable = false, unique = true)

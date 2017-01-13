@@ -11,7 +11,6 @@ import org.junit.runners.BlockJUnit4ClassRunner;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 
 @RunWith(BlockJUnit4ClassRunner.class)
 
@@ -54,23 +53,18 @@ public class UserSerializationTest {
 
 	@Test
 	public void testDeserialization() throws IOException {
-		String string = "{\"id\":\"id1\",\"username\":\"un1\",\"name\":\"name1\",\"surname\":\"sur1\",\"phone\":\"ph1\",\"email\":\"em1\",\"enabled\":true,\"verified\":true,\"failedLogins\":10,\"password\":\"pwd\"}";
-		try {
-			this.objectMapper.readValue(string, User.class);
-		} catch (final UnrecognizedPropertyException ex) {
-			Assert.assertTrue(ex.getPropertyName().equals("failedLogins"));
-		}
-
-		string = "{\"id\":\"id1\",\"username\":\"un1\",\"name\":\"name1\",\"surname\":\"sur1\",\"phone\":\"ph1\",\"email\":\"em1\",\"enabled\":true,\"verified\":true,\"password\":\"pwd\"}";
+		final String string = "{\"id\":\"id1\",\"failedLogins\":10,\"username\":\"un1\",\"name\":\"name1\",\"surname\":\"sur1\",\"phone\":\"ph1\",\"email\":\"em1\",\"enabled\":true,\"verified\":true,\"password\":\"pwd\"}";
 		final User user = this.objectMapper.readValue(string, User.class);
-		Assert.assertNotNull(user.getEmail());
+		Assert.assertEquals("em1", user.getEmail());
 		Assert.assertTrue(user.isEnabled());
-		Assert.assertNotNull(user.getId());
-		Assert.assertNotNull(user.getName());
-		Assert.assertNotNull(user.getPassword());
-		Assert.assertNotNull(user.getPhone());
-		Assert.assertNotNull(user.getSurname());
-		Assert.assertNotNull(user.getUsername());
+		// failed logins cannot be set (string contains non-zero value)
+		Assert.assertEquals(0, user.getFailedLogins());
+		Assert.assertEquals("id1", user.getId());
+		Assert.assertEquals("name1", user.getName());
+		Assert.assertEquals("pwd", user.getPassword());
+		Assert.assertEquals("ph1", user.getPhone());
+		Assert.assertEquals("sur1", user.getSurname());
+		Assert.assertEquals("un1", user.getUsername());
 		Assert.assertTrue(user.isVerified());
 	}
 
