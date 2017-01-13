@@ -10,6 +10,7 @@ import org.bookie.model.Place;
 import org.bookie.model.PlacesInfo;
 import org.bookie.model.Season;
 import org.bookie.model.SeasonDetails;
+import org.bookie.repository.PlaceRepository;
 import org.bookie.service.SeasonService;
 import org.bookie.test.AbstractTest;
 import org.junit.Assert;
@@ -21,6 +22,9 @@ public class SeasonServiceTest extends AbstractTest {
 
 	@Autowired
 	private SeasonService seasonService;
+
+	@Autowired
+	private PlaceRepository placeRepository;
 
 	private Organization org;
 
@@ -119,5 +123,33 @@ public class SeasonServiceTest extends AbstractTest {
 		final SeasonDetails seasonDetails = this.seasonService.getDetailsByDate(this.org.getName(),
 				Date.from(LocalDateTime.now().minusMonths(2).atZone(ZoneId.systemDefault()).toInstant()));
 		Assert.assertNotNull(seasonDetails);
+	}
+
+	@Test
+	public void disabledPlaceTest() {
+		final LocalDate now = LocalDate.now();
+		final Date start = Date.from(now.withDayOfMonth(1).atStartOfDay(ZoneId.systemDefault()).toInstant());
+		final Date end = Date.from(
+				now.withDayOfMonth(1).plusMonths(1).atStartOfDay(ZoneId.systemDefault()).minusMinutes(1).toInstant());
+
+		final Season season = this.createSeason(start, end, "test 1", this.org);
+
+		final Place t1 = this.createPlace("1", "aaa", this.org);
+		final Place t2 = new Place();
+		t2.setName("2");
+		t2.setType("aaa");
+		t2.setOrganization(this.org);
+		// disabled place
+		t2.setEnabled(false);
+		this.placeRepository.save(t2);
+		final Place t3 = this.createPlace("3", "aaa", this.org);
+
+		this.createSeasonPlace(season, t1);
+		this.createSeasonPlace(season, t2);
+		this.createSeasonPlace(season, t3);
+
+		final SeasonDetails current = this.seasonService.getDetailsCurrent(this.org.getName());
+		Assert.assertEquals(1, current.getPlaces().size());
+		Assert.assertEquals(2, current.getPlaces().get(0).getPlaceCount());
 	}
 }

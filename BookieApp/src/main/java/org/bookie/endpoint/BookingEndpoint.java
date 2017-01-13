@@ -10,7 +10,6 @@ import org.bookie.model.BookingEx;
 import org.bookie.service.BookingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -53,12 +52,11 @@ public class BookingEndpoint {
 
 	@ExceptionHandler(EmptyResultDataAccessException.class)
 	public ResponseEntity<Object> handleNotFoundException(final Exception ex) {
-		return new ResponseEntity<Object>(ExceptionUtils.getRootCauseMessage(ex), new HttpHeaders(),
-				HttpStatus.NOT_FOUND);
+		return new ResponseEntity<Object>(ExceptionUtils.getRootCauseMessage(ex), HttpStatus.NOT_FOUND);
 	}
 
 	@ExceptionHandler(NotFreeException.class)
 	public ResponseEntity<Object> handleNotFoundException(final NotFreeException ex) {
-		return new ResponseEntity<Object>("Requested time slot is not free", new HttpHeaders(), HttpStatus.CONFLICT);
+		return new ResponseEntity<Object>("Requested time slot is not free", HttpStatus.CONFLICT);
 	}
 }

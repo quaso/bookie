@@ -10,8 +10,8 @@ import org.bookie.model.SeasonDetails;
 import org.bookie.service.OrganizationService;
 import org.bookie.service.SeasonService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -52,6 +54,18 @@ public class SeasonEndpoint {
 		return this.find(() -> this.seasonService.getDetailsByDate(organizationName, date));
 	}
 
+	@RequestMapping(method = RequestMethod.POST, value = "/place/")
+	@ResponseStatus(HttpStatus.CREATED)
+	public void assignPlaceToSeason(@RequestParam final String seasonId, @RequestParam final String placeId) {
+		this.seasonService.assignPlaceToSeason(placeId, seasonId);
+	}
+
+	@RequestMapping(method = RequestMethod.DELETE, value = "/place/")
+	@ResponseStatus(HttpStatus.CREATED)
+	public void unassignPlaceToSeason(@RequestParam final String seasonId, @RequestParam final String placeId) {
+		this.seasonService.unassignPlaceFromSeason(placeId, seasonId);
+	}
+
 	private ResponseEntity<SeasonDetails> find(final Supplier<SeasonDetails> supplier) {
 		final SeasonDetails season = supplier.get();
 		ResponseEntity<SeasonDetails> result;
@@ -65,6 +79,16 @@ public class SeasonEndpoint {
 
 	@ExceptionHandler(OrganizationNotFoundException.class)
 	public ResponseEntity<Object> handleNotFoundException(final OrganizationNotFoundException ex) {
-		return new ResponseEntity<Object>(ex.getMessage(), new HttpHeaders(), HttpStatus.NOT_FOUND);
+		return new ResponseEntity<Object>(ex.getMessage(), HttpStatus.NOT_FOUND);
+	}
+
+	@ExceptionHandler(IllegalArgumentException.class)
+	public ResponseEntity<Object> handleNotFoundException(final IllegalArgumentException ex) {
+		return new ResponseEntity<Object>(ex.getMessage(), HttpStatus.NOT_FOUND);
+	}
+
+	@ExceptionHandler(DataIntegrityViolationException.class)
+	public ResponseEntity<Object> handleNotFoundException(final DataIntegrityViolationException ex) {
+		return new ResponseEntity<Object>(ex.getMessage(), HttpStatus.CONFLICT);
 	}
 }

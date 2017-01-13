@@ -12,8 +12,8 @@ import org.springframework.data.repository.CrudRepository;
 @Transactional
 public interface SeasonPlaceRepository extends CrudRepository<SeasonPlace, String> {
 
-	@Query(value = "select new org.bookie.model.PlacesInfo(sp.place.type, count(sp)) from SeasonPlace sp where sp.season.id=?1 group by sp.place.type")
-	public List<PlacesInfo> findPlacesCountForSeason(String seasonId);
+	@Query(value = "select new org.bookie.model.PlacesInfo(sp.place.type, count(sp)) from SeasonPlace sp where sp.season.id=?1 and sp.place.enabled=1 group by sp.place.type")
+	public List<PlacesInfo> findEnabledPlacesCountForSeason(String seasonId);
 
-	public Long countBySeasonIdEqualsAndPlaceTypeEquals(String seasonId, String placeType);
+	public void deleteByPlaceIdAndSeasonId(String placeId, String seasonId);
 }

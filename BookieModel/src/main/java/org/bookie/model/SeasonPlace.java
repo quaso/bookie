@@ -6,12 +6,13 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinColumns;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 
 import org.hibernate.annotations.Proxy;
 
 @Entity
 @Proxy(lazy = false)
-@Table(name = "SeasonPlace")
+@Table(name = "SeasonPlace", uniqueConstraints = @UniqueConstraint(columnNames = { "SeasonId", "PlaceId" }))
 public class SeasonPlace extends AbstractEntity {
 
 	@ManyToOne(targetEntity = Season.class, fetch = FetchType.LAZY)
@@ -42,21 +43,7 @@ public class SeasonPlace extends AbstractEntity {
 
 	@Override
 	public String toString() {
-		final StringBuffer sb = new StringBuffer();
-		sb.append("SeasonPlace[ ");
-		sb.append("Id=").append(this.getId()).append(" ");
-		if (this.getSeason() != null) {
-			sb.append("Season.Persist_ID=").append(this.getSeason().toString()).append(" ");
-		} else {
-			sb.append("Season=null ");
-		}
-		if (this.getPlace() != null) {
-			sb.append("Place.Persist_ID=").append(this.getPlace().toString()).append(" ");
-		} else {
-			sb.append("Place=null ");
-		}
-		sb.append("]");
-		return sb.toString();
+		return "SeasonPlace [season=" + this.season + ", place=" + this.place + "]";
 	}
 
 }
