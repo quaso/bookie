@@ -9,6 +9,7 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 
 import org.bookie.auth.OrganizationWebAuthenticationDetailsSource.OrganizationWebAuthenticationDetails;
+import org.bookie.exception.UserNotFoundException;
 import org.bookie.model.Organization;
 import org.bookie.model.OrganizationUserRole;
 import org.bookie.model.Role;
@@ -16,6 +17,7 @@ import org.bookie.model.User;
 import org.bookie.repository.OrganizationUserRoleRepository;
 import org.bookie.service.UserService;
 import org.bookie.test.AbstractTest;
+import org.bookie.util.password.PasswordPolicyException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -51,7 +53,7 @@ public class DatabaseAuthenticationProviderTest extends AbstractTest {
 	private final Map<String, Map<String, Set<Role>>> orgUserRoles = new HashMap<>();
 
 	@Before
-	public void setup() {
+	public void setup() throws PasswordPolicyException {
 		this.org1 = this.createOrganization("org1");
 		this.org2 = this.createOrganization("org2");
 
@@ -111,90 +113,90 @@ public class DatabaseAuthenticationProviderTest extends AbstractTest {
 	}
 
 	@Test
-	public void testWrongPassword() {
+	public void testWrongPassword() throws UserNotFoundException {
 		try {
 			this.authenticate(this.user1.getUsername(), PASSWORD + "a", this.org1.getName());
 			Assert.fail("No exception was thrown");
 		} catch (final AuthenticationException ex) {
-			final User dbUser1 = this.userService.findByUsername(this.user1.getUsername()).get();
+			final User dbUser1 = this.userService.findByUsername(this.user1.getUsername());
 			Assert.assertEquals(1, dbUser1.getFailedLogins());
 		}
 	}
 
 	@Test
-	public void testLock() {
+	public void testLock() throws UserNotFoundException {
 		for (int i = 1; i <= org.bookie.auth.User.MAX_INVALID_LOGINS + 2; i++) {
 			try {
 				this.authenticate(this.user1.getUsername(), PASSWORD + "a", this.org1.getName());
 				Assert.fail("No exception was thrown");
 			} catch (final LockedException ex) {
-				final User dbUser1 = this.userService.findByUsername(this.user1.getUsername()).get();
+				final User dbUser1 = this.userService.findByUsername(this.user1.getUsername());
 				Assert.assertEquals(org.bookie.auth.User.MAX_INVALID_LOGINS, dbUser1.getFailedLogins());
 			} catch (final AuthenticationException ex) {
-				final User dbUser1 = this.userService.findByUsername(this.user1.getUsername()).get();
+				final User dbUser1 = this.userService.findByUsername(this.user1.getUsername());
 				Assert.assertEquals(i, dbUser1.getFailedLogins());
 				Assert.assertTrue(i <= org.bookie.auth.User.MAX_INVALID_LOGINS);
 			}
 		}
 		// test user2 is not affected
 		this.authenticate(this.user2.getUsername(), PASSWORD, this.org1.getName());
-		final User dbUser2 = this.userService.findByUsername(this.user2.getUsername()).get();
+		final User dbUser2 = this.userService.findByUsername(this.user2.getUsername());
 		Assert.assertEquals(0, dbUser2.getFailedLogins());
 	}
 
 	@Test
-	public void testLockUnlock() {
+	public void testLockUnlock() throws UserNotFoundException {
 		User dbUser1;
 		for (int i = 1; i <= org.bookie.auth.User.MAX_INVALID_LOGINS + 2; i++) {
 			try {
 				this.authenticate(this.user1.getUsername(), PASSWORD + "a", this.org1.getName());
 				Assert.fail("No exception was thrown");
 			} catch (final LockedException ex) {
-				dbUser1 = this.userService.findByUsername(this.user1.getUsername()).get();
+				dbUser1 = this.userService.findByUsername(this.user1.getUsername());
 				Assert.assertEquals(org.bookie.auth.User.MAX_INVALID_LOGINS, dbUser1.getFailedLogins());
 			} catch (final AuthenticationException ex) {
-				dbUser1 = this.userService.findByUsername(this.user1.getUsername()).get();
+				dbUser1 = this.userService.findByUsername(this.user1.getUsername());
 				Assert.assertEquals(i, dbUser1.getFailedLogins());
 				Assert.assertTrue(i <= org.bookie.auth.User.MAX_INVALID_LOGINS);
 			}
 		}
-		final String newPwd = this.userService.resetPassword(this.user1);
-		dbUser1 = this.userService.findByUsername(this.user1.getUsername()).get();
+		this.userService.generatePassword(this.user1.getUsername());
+		dbUser1 = this.userService.findByUsername(this.user1.getUsername());
 		Assert.assertEquals(0, dbUser1.getFailedLogins());
 
 		// test user2 is not affected
 		this.authenticate(this.user2.getUsername(), PASSWORD, this.org1.getName());
-		final User dbUser2 = this.userService.findByUsername(this.user2.getUsername()).get();
+		final User dbUser2 = this.userService.findByUsername(this.user2.getUsername());
 		Assert.assertEquals(0, dbUser2.getFailedLogins());
 
 		try {
-			this.authenticate(this.user1.getUsername(), newPwd, this.org1.getName());
+			this.authenticate(this.user1.getUsername(), dbUser1.getPassword(), this.org1.getName());
 		} catch (final AuthenticationException ex) {
-			dbUser1 = this.userService.findByUsername(this.user1.getUsername()).get();
+			dbUser1 = this.userService.findByUsername(this.user1.getUsername());
 			Assert.assertEquals(1, dbUser1.getFailedLogins());
 		}
 
 	}
 
 	@Test
-	public void testEmptyPassword() {
+	public void testEmptyPassword() throws UserNotFoundException {
 		try {
 			this.authenticate(this.user1.getUsername(), "", this.org1.getName());
 			Assert.fail("No exception was thrown");
 		} catch (final AuthenticationException ex) {
 			// user cannot be locked by empty password
-			final User dbUser1 = this.userService.findByUsername(this.user1.getUsername()).get();
+			final User dbUser1 = this.userService.findByUsername(this.user1.getUsername());
 			Assert.assertEquals(0, dbUser1.getFailedLogins());
 		}
 	}
 
-	private User createUser(final String username, final String password) {
+	private User createUser(final String username, final String password) throws PasswordPolicyException {
 		final User result = new User();
 		result.setUsername(username);
 		result.setName("n" + username);
 		result.setSurname("surname");
-		result.setPhone("123");
 		result.setPassword(password);
+		result.setPhone("123");
 		result.setEnabled(true);
 		return this.userService.createUser(result);
 	}

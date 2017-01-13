@@ -1,20 +1,24 @@
 package org.bookie.service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
-import org.apache.commons.lang3.RandomStringUtils;
+import org.bookie.exception.NotFoundException;
+import org.bookie.exception.RoleNotFoundException;
 import org.bookie.exception.UserNotFoundException;
+import org.bookie.model.Organization;
+import org.bookie.model.OrganizationUserRole;
 import org.bookie.model.Role;
 import org.bookie.model.User;
 import org.bookie.repository.OrganizationUserRoleRepository;
+import org.bookie.repository.RoleRepository;
 import org.bookie.repository.UserRepository;
+import org.bookie.util.password.PasswordPolicyException;
+import org.bookie.util.password.PasswordUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -25,26 +29,37 @@ public class UserService {
 	private UserRepository userRepository;
 
 	@Autowired
+	private RoleRepository roleRepository;
+
+	@Autowired
+	private OrganizationService organizationService;
+
+	@Autowired
 	private OrganizationUserRoleRepository organizationUserRoleRepository;
 
 	@Autowired
-	private PasswordEncoder passwordEncoder;
+	private PasswordUtils passwordUtils;
 
-	public User createUser(final User user) {
-		// TODO: add more here ? :)
+	public User createUser(final User user) throws PasswordPolicyException {
 		this.setPasswordInternal(user, user.getPassword());
 		return this.userRepository.save(user);
 	}
 
-	public String resetPassword(final User user) {
-		final String pwd = RandomStringUtils.random(10, 0, 0, true, true);
-		this.setPasswordInternal(user, pwd);
-		this.userRepository.save(user);
-		return pwd;
+	public void generatePassword(final String username) throws UserNotFoundException {
+		final User user = this.findByUsername(username);
+		final String pwd = this.passwordUtils.generatePassword();
+		try {
+			this.setPasswordInternal(user, pwd);
+			this.userRepository.save(user);
+			//TODO: send email with new password
+		} catch (final PasswordPolicyException e) {
+			// should not happen :)
+		}
 	}
 
-	private void setPasswordInternal(final User user, final String password) {
-		user.setPassword(this.passwordEncoder.encode(password));
+	private void setPasswordInternal(final User user, final String password) throws PasswordPolicyException {
+		this.passwordUtils.checkPasswordPolicy(password);
+		user.setPassword(this.passwordUtils.encodePassword(password));
 		user.setFailedLogins(0);
 	}
 
@@ -66,13 +81,35 @@ public class UserService {
 	}
 
 	public void disableUser(final String username) throws UserNotFoundException {
-		final User user = this.findByUsername(username).orElseThrow(() -> new UserNotFoundException(null, username));
+		final User user = this.findByUsername(username);
 		user.setEnabled(false);
 		this.updateUser(user);
 	}
 
-	public Optional<User> findByUsername(final String username) {
-		return this.userRepository.findByUsernameEqualsIgnoreCase(username);
+	public User findByUsername(final String username) throws UserNotFoundException {
+		return this.userRepository.findByUsernameEqualsIgnoreCase(username)
+				.orElseThrow(() -> new UserNotFoundException(null, username));
+	}
+
+	public void addUserToRole(final String userId, final String roleName, final String organizationName)
+			throws NotFoundException {
+		final User user = this.userRepository.findOne(userId);
+		if (user == null) {
+			throw new UserNotFoundException(userId, null);
+		}
+		final Role role = this.roleRepository.findByName(roleName);
+		if (role == null) {
+			throw new RoleNotFoundException(roleName);
+		}
+		final Organization org = this.organizationService.findByName(organizationName);
+		final OrganizationUserRole entity = new OrganizationUserRole();
+		entity.setValues(org, user, role);
+		this.organizationUserRoleRepository.save(entity);
+	}
+
+	public void deleteUserFromRole(final String userId, final String roleName, final String organizationName) {
+		this.organizationUserRoleRepository.deleteByUserIdAndRoleNameAndOrganizationName(userId, roleName,
+				organizationName);
 	}
 
 	public Set<Role> findRolesForUserOrganization(final User user, final String organizationName) {
@@ -88,11 +125,11 @@ public class UserService {
 	}
 
 	public void loginFail(final String username) {
-		final Optional<User> optionalUser = this.findByUsername(username);
-		if (optionalUser.isPresent()) {
-			final User user = optionalUser.get();
+		try {
+			final User user = this.findByUsername(username);
 			user.setFailedLogins(user.getFailedLogins() + 1);
 			this.userRepository.save(user);
+		} catch (final UserNotFoundException e) {
 		}
 	}
 }

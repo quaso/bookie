@@ -2,7 +2,7 @@ package org.bookie.exception;
 
 import org.apache.commons.lang3.StringUtils;
 
-public class UserNotFoundException extends Exception {
+public class UserNotFoundException extends NotFoundException {
 
 	public UserNotFoundException(final String id, final String username) {
 		super(createMessage(id, username));

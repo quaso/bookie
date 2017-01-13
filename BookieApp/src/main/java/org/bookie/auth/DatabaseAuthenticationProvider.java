@@ -2,6 +2,7 @@ package org.bookie.auth;
 
 import org.apache.commons.lang3.StringUtils;
 import org.bookie.auth.OrganizationWebAuthenticationDetailsSource.OrganizationWebAuthenticationDetails;
+import org.bookie.exception.UserNotFoundException;
 import org.bookie.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -54,9 +55,13 @@ public class DatabaseAuthenticationProvider extends AbstractUserDetailsAuthentic
 			organizationName = ((OrganizationWebAuthenticationDetails) authentication.getDetails())
 					.getOrganizationName();
 		}
-		final org.bookie.model.User dbUser = this.userService.findByUsername(username)
-				.orElseThrow(() -> new UsernameNotFoundException(username));
-		return new User(dbUser, this.userService.findRolesForUserOrganization(dbUser, organizationName));
+
+		try {
+			final org.bookie.model.User dbUser = this.userService.findByUsername(username);
+			return new User(dbUser, this.userService.findRolesForUserOrganization(dbUser, organizationName));
+		} catch (final UserNotFoundException e) {
+			throw new UsernameNotFoundException(username);
+		}
 	}
 
 }

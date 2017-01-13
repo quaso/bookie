@@ -12,4 +12,6 @@ public interface OrganizationUserRoleRepository extends CrudRepository<Organizat
 
 	public Set<OrganizationUserRole> getByUserIdAndOrganizationName(String userId, String organizationName);
 
+	public void deleteByUserIdAndRoleNameAndOrganizationName(String userId, String roleName, String organizationName);
+
 }

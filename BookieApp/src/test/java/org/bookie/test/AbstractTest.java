@@ -24,6 +24,7 @@ import org.bookie.repository.SeasonPlaceRepository;
 import org.bookie.repository.SeasonRepository;
 import org.bookie.service.UserService;
 import org.bookie.test.conf.TestConfiguration;
+import org.bookie.util.password.PasswordPolicyException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -123,7 +124,10 @@ public abstract class AbstractTest {
 		user.setPhone("123");
 		user.setPassword(USER_PWD);
 		user.setEnabled(true);
-		this.userService.createUser(user);
+		try {
+			this.userService.createUser(user);
+		} catch (final PasswordPolicyException e) {
+		}
 
 		final OrganizationUserRole our = new OrganizationUserRole();
 		our.setValues(organization, user, role);

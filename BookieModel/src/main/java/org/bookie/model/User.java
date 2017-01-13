@@ -34,7 +34,7 @@ public class User extends AbstractEntity {
 	private String email;
 
 	@Column(name = "enabled", nullable = false)
-	private boolean enabled;
+	private boolean enabled = true;
 
 	@Column(name = "verified", nullable = false)
 	private boolean verified = false;

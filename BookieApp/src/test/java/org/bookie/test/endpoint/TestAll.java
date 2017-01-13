@@ -12,6 +12,7 @@ import org.bookie.auth.OrganizationWebAuthenticationDetailsSource.OrganizationWe
 import org.bookie.model.Organization;
 import org.bookie.model.Place;
 import org.bookie.model.Season;
+import org.bookie.model.User;
 import org.json.JSONObject;
 import org.junit.Test;
 import org.springframework.http.MediaType;
@@ -25,6 +26,7 @@ public class TestAll extends AbstractEndpointTest {
 
 		final Organization org = this.createOrganizationRequest();
 
+		// add organization
 		this.mockMvc
 				.perform(post("/api/organization/")
 						.contentType(MediaType.APPLICATION_JSON)
@@ -36,6 +38,7 @@ public class TestAll extends AbstractEndpointTest {
 		final Date start = this.date(LocalDate.of(2016, 1, 1));
 		final Date end = this.date(LocalDate.of(2016, 3, 31));
 
+		// create season 1
 		final String seasonId = this.extractId(this.mockMvc.perform(post("/api/season/")
 				.header(OrganizationWebAuthenticationDetails.HEADER_ORGANIZATION_NAME, org.getName())
 				.contentType(MediaType.APPLICATION_JSON)
@@ -44,6 +47,7 @@ public class TestAll extends AbstractEndpointTest {
 				.andExpect(status().isCreated())
 				.andExpect(jsonPath("$.id").isNotEmpty()).andReturn());
 
+		// create place 1
 		final String place1Id = this.extractId(this.mockMvc.perform(post("/api/place/")
 				.header(OrganizationWebAuthenticationDetails.HEADER_ORGANIZATION_NAME, org.getName())
 				.contentType(MediaType.APPLICATION_JSON)
@@ -52,6 +56,7 @@ public class TestAll extends AbstractEndpointTest {
 				.andExpect(status().isCreated())
 				.andExpect(jsonPath("$.id").isNotEmpty()).andReturn());
 
+		// create place 2
 		final String place2Id = this.extractId(this.mockMvc.perform(post("/api/place/")
 				.header(OrganizationWebAuthenticationDetails.HEADER_ORGANIZATION_NAME, org.getName())
 				.contentType(MediaType.APPLICATION_JSON)
@@ -60,13 +65,30 @@ public class TestAll extends AbstractEndpointTest {
 				.andExpect(status().isCreated())
 				.andExpect(jsonPath("$.id").isNotEmpty()).andReturn());
 
+		// add place 1 to season 1
 		this.mockMvc.perform(post("/api/season/place/")
 				.param("seasonId", seasonId)
 				.param("placeId", place1Id)
 				.contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON_VALUE))
+				.andExpect(status().isCreated());
+
+		// create user 1
+		final String user1Id = this.extractId(this.mockMvc.perform(post("/api/user/")
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON_VALUE)
+				.content(this.objectMapper.writeValueAsString(this.createUser("tester"))))
 				.andExpect(status().isCreated())
-				.andExpect(jsonPath("$.id").isNotEmpty());
+				.andExpect(jsonPath("$.id").isNotEmpty()).andReturn());
+
+		// add user 1 to role admin
+		this.mockMvc.perform(post("/api/user/role/")
+				.header(OrganizationWebAuthenticationDetails.HEADER_ORGANIZATION_NAME, org.getName())
+				.param("userId", user1Id)
+				.param("roleName", "ROLE_ADMIN")
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON_VALUE))
+				.andExpect(status().isCreated());
 	}
 
 	private String extractId(final MvcResult result) throws UnsupportedEncodingException {
@@ -98,5 +120,15 @@ public class TestAll extends AbstractEndpointTest {
 		place.setName(name);
 		place.setType(type);
 		return place;
+	}
+
+	private User createUser(final String name) {
+		final User user = new User();
+		user.setUsername(name);
+		user.setName(name);
+		user.setSurname("surname");
+		user.setPhone("123");
+		user.setPassword("pwd");
+		return user;
 	}
 }
