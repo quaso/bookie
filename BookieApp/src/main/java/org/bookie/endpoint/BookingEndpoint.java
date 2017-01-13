@@ -51,12 +51,12 @@ public class BookingEndpoint {
 	}
 
 	@ExceptionHandler(EmptyResultDataAccessException.class)
-	public ResponseEntity<Object> handleNotFoundException(final Exception ex) {
+	public ResponseEntity<Object> handleException(final EmptyResultDataAccessException ex) {
 		return new ResponseEntity<Object>(ExceptionUtils.getRootCauseMessage(ex), HttpStatus.NOT_FOUND);
 	}
 
 	@ExceptionHandler(NotFreeException.class)
-	public ResponseEntity<Object> handleNotFoundException(final NotFreeException ex) {
+	public ResponseEntity<Object> handleException(final NotFreeException ex) {
 		return new ResponseEntity<Object>("Requested time slot is not free", HttpStatus.CONFLICT);
 	}
 }

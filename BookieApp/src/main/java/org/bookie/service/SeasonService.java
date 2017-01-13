@@ -4,6 +4,9 @@ import java.util.Date;
 
 import javax.transaction.Transactional;
 
+import org.bookie.exception.NotFoundException;
+import org.bookie.exception.PlaceNotFoundException;
+import org.bookie.exception.SeasonNotFoundException;
 import org.bookie.model.Place;
 import org.bookie.model.Season;
 import org.bookie.model.SeasonDetails;
@@ -31,14 +34,14 @@ public class SeasonService {
 		return this.seasonRepository.save(season);
 	}
 
-	public SeasonPlace assignPlaceToSeason(final String placeId, final String seasonId) {
+	public SeasonPlace assignPlaceToSeason(final String placeId, final String seasonId) throws NotFoundException {
 		final Place place = this.placeRepository.findOne(placeId);
 		if (place == null) {
-			throw new IllegalArgumentException("Place '" + placeId + "' cannot be found");
+			throw new PlaceNotFoundException(placeId);
 		}
 		final Season season = this.seasonRepository.findOne(seasonId);
 		if (season == null) {
-			throw new IllegalArgumentException("Season '" + seasonId + "' cannot be found");
+			throw new SeasonNotFoundException(seasonId);
 		}
 
 		final SeasonPlace sp = new SeasonPlace();

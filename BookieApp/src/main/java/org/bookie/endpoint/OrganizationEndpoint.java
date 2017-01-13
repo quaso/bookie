@@ -32,7 +32,7 @@ public class OrganizationEndpoint {
 	}
 
 	@ExceptionHandler(DataIntegrityViolationException.class)
-	public ResponseEntity<Object> handleNotFoundException(final DataIntegrityViolationException ex) {
+	public ResponseEntity<Object> handleException(final DataIntegrityViolationException ex) {
 		return new ResponseEntity<Object>(ex.getMessage(), HttpStatus.CONFLICT);
 	}
 }
