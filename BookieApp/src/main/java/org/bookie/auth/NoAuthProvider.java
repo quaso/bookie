@@ -26,7 +26,7 @@ public class NoAuthProvider extends AbstractUserDetailsAuthenticationProvider {
 		final Role role = new Role();
 		role.setName("ROLE_SUPER_ADMIN");
 		roles.add(role);
-		return new User(dbUser, roles);
+		return new LoggedUser(dbUser, roles);
 	}
 
 }

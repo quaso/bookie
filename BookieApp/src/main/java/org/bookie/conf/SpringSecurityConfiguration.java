@@ -1,8 +1,10 @@
 package org.bookie.conf;
 
+import com.allanditzel.springframework.security.web.csrf.CsrfTokenResponseHeaderBindingFilter;
 import org.bookie.auth.DatabaseAuthenticationProvider;
 import org.bookie.auth.NoAuthProvider;
 import org.bookie.auth.OrganizationWebAuthenticationDetailsSource;
+import org.bookie.web.rest.RESTAuthenticationEntryPoint;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -17,6 +19,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.security.web.csrf.CsrfFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
@@ -29,32 +33,35 @@ public class SpringSecurityConfiguration extends WebSecurityConfigurerAdapter {
 	@Autowired
 	private WebAuthenticationDetailsSource authenticationDetailsSource;
 
+	@Autowired
+	private RESTAuthenticationEntryPoint authenticationEntryPoint;
+
 	@Override
 	protected void configure(final HttpSecurity http) throws Exception {
-		http.csrf().disable().authorizeRequests()
-				.antMatchers("/**").not().authenticated();
-		//				.antMatchers("/**").permitAll();
-		// TODO: add here some config :)
 
-		//		http.csrf().disable().authorizeRequests()
-		// .antMatchers("/" +
-		// AppStatusEndpoint.ENDPOINT_NAME).not().authenticated() //
-		// expose /appStatus for not authenticated clients
-		// .antMatchers("/" +
-		// AppStatusEndpoint.ENDPOINT_NAME).permitAll() // expose
-		// /appStatus for all authenticated clients regardless of role
-		// //.antMatchers("/configprops/**", "/info/**", "/metrics/**",
-		// "/health/**", "/jolokia/**", "/env/**", "/dump/**",
-		// "/trace/**") .hasRole("managementGrp")
-		// .antMatchers("/health", "/info", "/metrics",
-		// "/env").hasRole("managementGrp")
-		// .antMatchers(ENDPOINT_READ_DOCUMENT).not().authenticated()
-		// .antMatchers(ENDPOINT_READ_DOCUMENT).permitAll()
-		//				.antMatchers("/**").hasRole("SUPER_ADMIN").anyRequest().authenticated().and().httpBasic()
+		CsrfTokenResponseHeaderBindingFilter csrfTokenFilter = new CsrfTokenResponseHeaderBindingFilter();
+		http.addFilterAfter(csrfTokenFilter, CsrfFilter.class);
 
-		// IMPORTANT
-		//				.authenticationDetailsSource(this.authenticationDetailsSource);
+		http.logout()
+				.logoutRequestMatcher(new AntPathRequestMatcher("/api/logout", "GET"))
+				.logoutSuccessUrl("/logged-out.html");
+
+//		http.authorizeRequests()
+//				.antMatchers("/logged-out.html").permitAll()
+//				.antMatchers("/access-denied.html").permitAll()
+//				.antMatchers("/api/logout").permitAll()
+//				.antMatchers("/api/logged").permitAll();
+
+
+		http.exceptionHandling().authenticationEntryPoint(authenticationEntryPoint);
+
+		//TODO JWT
+//        http.formLogin()
+//                .loginProcessingUrl("/api/login/")
+//                .successHandler(authenticationSuccessHandler)
+//                .failureHandler(authenticationFailureHandler);
 	}
+
 
 	//	@Override
 	//	protected void configure(final AuthenticationManagerBuilder auth) throws Exception {

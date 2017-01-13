@@ -10,7 +10,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.util.Assert;
 
-public class User implements UserDetails {
+public class LoggedUser implements UserDetails {
 	public static final int MAX_INVALID_LOGINS = 3;
 	public static final String ROLE_TOKEN_USED = "ROLE_TOKEN_USED";
 
@@ -20,7 +20,7 @@ public class User implements UserDetails {
 	private boolean tokenUsed = false;
 	private final Set<GrantedAuthority> authorities = new HashSet<>();
 
-	public User(final org.bookie.model.User dbUser, final Set<Role> rolesForOrganization) {
+	public LoggedUser(final org.bookie.model.User dbUser, final Set<Role> rolesForOrganization) {
 		Assert.notNull(dbUser);
 		this.dbUser = dbUser;
 		for (final Role role : rolesForOrganization) {

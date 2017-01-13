@@ -8,6 +8,7 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.bookie.auth.LoggedUser;
 import org.bookie.auth.OrganizationWebAuthenticationDetailsSource.OrganizationWebAuthenticationDetails;
 import org.bookie.exception.UserNotFoundException;
 import org.bookie.model.Organization;
@@ -125,17 +126,17 @@ public class DatabaseAuthenticationProviderTest extends AbstractTest {
 
 	@Test
 	public void testLock() throws UserNotFoundException {
-		for (int i = 1; i <= org.bookie.auth.User.MAX_INVALID_LOGINS + 2; i++) {
+		for (int i = 1; i <= LoggedUser.MAX_INVALID_LOGINS + 2; i++) {
 			try {
 				this.authenticate(this.user1.getUsername(), PASSWORD + "a", this.org1.getName());
 				Assert.fail("No exception was thrown");
 			} catch (final LockedException ex) {
 				final User dbUser1 = this.userService.findByUsername(this.user1.getUsername());
-				Assert.assertEquals(org.bookie.auth.User.MAX_INVALID_LOGINS, dbUser1.getFailedLogins());
+				Assert.assertEquals(LoggedUser.MAX_INVALID_LOGINS, dbUser1.getFailedLogins());
 			} catch (final AuthenticationException ex) {
 				final User dbUser1 = this.userService.findByUsername(this.user1.getUsername());
 				Assert.assertEquals(i, dbUser1.getFailedLogins());
-				Assert.assertTrue(i <= org.bookie.auth.User.MAX_INVALID_LOGINS);
+				Assert.assertTrue(i <= LoggedUser.MAX_INVALID_LOGINS);
 			}
 		}
 		// test user2 is not affected
@@ -147,17 +148,17 @@ public class DatabaseAuthenticationProviderTest extends AbstractTest {
 	@Test
 	public void testLockUnlock() throws UserNotFoundException {
 		User dbUser1;
-		for (int i = 1; i <= org.bookie.auth.User.MAX_INVALID_LOGINS + 2; i++) {
+		for (int i = 1; i <= LoggedUser.MAX_INVALID_LOGINS + 2; i++) {
 			try {
 				this.authenticate(this.user1.getUsername(), PASSWORD + "a", this.org1.getName());
 				Assert.fail("No exception was thrown");
 			} catch (final LockedException ex) {
 				dbUser1 = this.userService.findByUsername(this.user1.getUsername());
-				Assert.assertEquals(org.bookie.auth.User.MAX_INVALID_LOGINS, dbUser1.getFailedLogins());
+				Assert.assertEquals(LoggedUser.MAX_INVALID_LOGINS, dbUser1.getFailedLogins());
 			} catch (final AuthenticationException ex) {
 				dbUser1 = this.userService.findByUsername(this.user1.getUsername());
 				Assert.assertEquals(i, dbUser1.getFailedLogins());
-				Assert.assertTrue(i <= org.bookie.auth.User.MAX_INVALID_LOGINS);
+				Assert.assertTrue(i <= LoggedUser.MAX_INVALID_LOGINS);
 			}
 		}
 		this.userService.generatePassword(this.user1.getUsername());

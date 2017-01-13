@@ -1,6 +1,6 @@
 package org.bookie.auth.listener;
 
-import org.bookie.auth.User;
+import org.bookie.auth.LoggedUser;
 import org.springframework.security.authentication.event.AuthenticationSuccessEvent;
 import org.springframework.stereotype.Component;
 
@@ -9,6 +9,6 @@ public class SuccessAuthenticationListener extends AbstractAuthenticationListene
 
 	@Override
 	public void onApplicationEvent(final AuthenticationSuccessEvent event) {
-		this.userService.loginSuccess(((User) event.getAuthentication().getPrincipal()).getDbUser());
+		this.userService.loginSuccess(((LoggedUser) event.getAuthentication().getPrincipal()).getDbUser());
 	}
 }

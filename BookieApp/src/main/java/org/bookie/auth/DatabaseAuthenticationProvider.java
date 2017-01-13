@@ -27,8 +27,8 @@ public class DatabaseAuthenticationProvider extends AbstractUserDetailsAuthentic
 	@Override
 	protected void additionalAuthenticationChecks(final UserDetails userDetails,
 			final UsernamePasswordAuthenticationToken authentication) throws AuthenticationException {
-		Assert.isAssignable(User.class, userDetails.getClass());
-		final User user = (User) userDetails;
+		Assert.isAssignable(LoggedUser.class, userDetails.getClass());
+		final LoggedUser loggedUser = (LoggedUser) userDetails;
 
 		// check password
 		if (authentication.getCredentials() == null
@@ -38,7 +38,7 @@ public class DatabaseAuthenticationProvider extends AbstractUserDetailsAuthentic
 					.getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad credentials"));
 		}
 
-		if (!this.passwordEncoder.matches(authentication.getCredentials().toString(), user.getPassword())) {
+		if (!this.passwordEncoder.matches(authentication.getCredentials().toString(), loggedUser.getPassword())) {
 			// user NOT authenticated with password
 			this.logger.debug("Authentication failed: password does not match stored value");
 			throw new BadCredentialsException(this.messages
@@ -58,7 +58,7 @@ public class DatabaseAuthenticationProvider extends AbstractUserDetailsAuthentic
 
 		try {
 			final org.bookie.model.User dbUser = this.userService.findByUsername(username);
-			return new User(dbUser, this.userService.findRolesForUserOrganization(dbUser, organizationName));
+			return new LoggedUser(dbUser, this.userService.findRolesForUserOrganization(dbUser, organizationName));
 		} catch (final UserNotFoundException e) {
 			throw new UsernameNotFoundException(username);
 		}

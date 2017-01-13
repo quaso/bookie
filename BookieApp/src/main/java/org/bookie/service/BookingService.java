@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
+import org.bookie.auth.LoggedUser;
 import org.bookie.exception.NotFreeException;
 import org.bookie.model.Booking;
 import org.bookie.model.OwnerTimeSlot;
@@ -207,6 +208,6 @@ public class BookingService {
 	}
 
 	private User extractDbUserFromAuth(final Authentication authentication) {
-		return ((org.bookie.auth.User) authentication.getPrincipal()).getDbUser();
+		return ((LoggedUser) authentication.getPrincipal()).getDbUser();
 	}
 }
