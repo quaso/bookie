@@ -3,6 +3,7 @@ package org.bookie.endpoint;
 import java.util.Date;
 import java.util.function.Supplier;
 
+import org.bookie.exception.OrganizationNotFoundException;
 import org.bookie.model.Organization;
 import org.bookie.model.Season;
 import org.bookie.model.SeasonDetails;
@@ -10,8 +11,10 @@ import org.bookie.service.OrganizationService;
 import org.bookie.service.SeasonService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -31,13 +34,10 @@ public class SeasonEndpoint {
 
 	@RequestMapping(method = RequestMethod.POST, value = "/")
 	public ResponseEntity<?> createSeason(final @RequestHeader String organizationName,
-			@RequestBody final Season season) {
+			@RequestBody final Season season) throws OrganizationNotFoundException {
 		final Organization org = this.organizationService.findByName(organizationName);
-		if (org == null) {
-			throw new IllegalStateException("Organization could not be found");
-		}
 		season.setOrganization(org);
-		this.seasonService.createSeason(season);
+		this.seasonService.createOrUpdateSeason(season);
 		return new ResponseEntity<>(season, HttpStatus.CREATED);
 	}
 
@@ -61,5 +61,10 @@ public class SeasonEndpoint {
 			result = new ResponseEntity<SeasonDetails>(season, HttpStatus.OK);
 		}
 		return result;
+	}
+
+	@ExceptionHandler(OrganizationNotFoundException.class)
+	public ResponseEntity<Object> handleNotFoundException(final OrganizationNotFoundException ex) {
+		return new ResponseEntity<Object>(ex.getMessage(), new HttpHeaders(), HttpStatus.NOT_FOUND);
 	}
 }

@@ -24,7 +24,6 @@ import org.bookie.auth.OrganizationWebAuthenticationDetailsSource.OrganizationWe
 import org.bookie.model.Organization;
 import org.bookie.model.Place;
 import org.bookie.model.Season;
-import org.bookie.service.OrganizationService;
 import org.bookie.service.SeasonService;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,9 +33,6 @@ import org.springframework.restdocs.headers.RequestHeadersSnippet;
 import org.springframework.restdocs.payload.FieldDescriptor;
 
 public class SeasonEndpointTest extends AbstractEndpointTest {
-
-	@Autowired
-	private OrganizationService organizationService;
 
 	@Autowired
 	private SeasonService seasonService;
@@ -64,9 +60,7 @@ public class SeasonEndpointTest extends AbstractEndpointTest {
 		final Date end = Date.from(
 				now.withDayOfMonth(1).plusMonths(1).atStartOfDay(ZoneId.systemDefault()).minusMinutes(1).toInstant());
 
-		final Organization org = new Organization();
-		org.setName("org");
-		this.organizationService.createOrganization(org);
+		final Organization org = this.createOrganization("org");
 
 		final Season request = new Season();
 		request.setDateStart(start);
@@ -104,9 +98,7 @@ public class SeasonEndpointTest extends AbstractEndpointTest {
 
 	@Test
 	public void getCurrentTest() throws Exception {
-		final Organization org = new Organization();
-		org.setName("org");
-		this.organizationService.createOrganization(org);
+		final Organization org = this.createOrganization("org");
 
 		final LocalDate now = LocalDate.now();
 		final Date start = Date.from(now.withDayOfMonth(1).atStartOfDay(ZoneId.systemDefault()).toInstant());
@@ -120,7 +112,7 @@ public class SeasonEndpointTest extends AbstractEndpointTest {
 		season.setTimeEnd(22 * 60);
 		season.setName("season 1");
 		season.setOrganization(org);
-		this.seasonService.createSeason(season);
+		this.seasonService.createOrUpdateSeason(season);
 
 		final Place t1 = this.createPlace("1", "aaa", org);
 		final Place t2 = this.createPlace("2", "aaa", org);
@@ -159,9 +151,7 @@ public class SeasonEndpointTest extends AbstractEndpointTest {
 
 	@Test
 	public void getByDateTest() throws Exception {
-		final Organization org = new Organization();
-		org.setName("org");
-		this.organizationService.createOrganization(org);
+		final Organization org = this.createOrganization("org");
 
 		final LocalDate now = LocalDate.now();
 		final Date start = Date
@@ -177,7 +167,7 @@ public class SeasonEndpointTest extends AbstractEndpointTest {
 		season.setTimeEnd(22 * 60);
 		season.setName("season 1");
 		season.setOrganization(org);
-		this.seasonService.createSeason(season);
+		this.seasonService.createOrUpdateSeason(season);
 
 		final Place t1 = this.createPlace("1", "aaa", org);
 		final Place t2 = this.createPlace("2", "aaa", org);

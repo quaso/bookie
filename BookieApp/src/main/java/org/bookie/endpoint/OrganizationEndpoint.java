@@ -4,7 +4,6 @@ import org.bookie.model.Organization;
 import org.bookie.service.OrganizationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -22,13 +21,18 @@ public class OrganizationEndpoint {
 
 	@RequestMapping(method = RequestMethod.POST, value = "/")
 	public ResponseEntity<?> createOrganization(@RequestBody final Organization organization) {
-		this.organizationService.createOrganization(organization);
-
+		this.organizationService.createOrUpdateOrganization(organization);
 		return new ResponseEntity<>(organization, HttpStatus.CREATED);
+	}
+
+	@RequestMapping(method = RequestMethod.PUT, value = "/")
+	public ResponseEntity<?> updateOrganization(@RequestBody final Organization organization) {
+		this.organizationService.createOrUpdateOrganization(organization);
+		return new ResponseEntity<>(organization, HttpStatus.OK);
 	}
 
 	@ExceptionHandler(DataIntegrityViolationException.class)
 	public ResponseEntity<Object> handleNotFoundException(final DataIntegrityViolationException ex) {
-		return new ResponseEntity<Object>(ex.getMessage(), new HttpHeaders(), HttpStatus.CONFLICT);
+		return new ResponseEntity<Object>(ex.getMessage(), HttpStatus.CONFLICT);
 	}
 }

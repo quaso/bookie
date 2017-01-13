@@ -16,7 +16,9 @@ import java.util.List;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
+import org.bookie.auth.OrganizationWebAuthenticationDetailsSource.OrganizationWebAuthenticationDetails;
 import org.bookie.model.Organization;
+import org.bookie.model.Place;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.http.MediaType;
@@ -26,7 +28,7 @@ import org.springframework.test.annotation.DirtiesContext;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-public class OrganizationEndpointTest extends AbstractEndpointTest {
+public class PlaceEndpointTest extends AbstractEndpointTest {
 
 	private RequestHeadersSnippet requestHeaders;
 
@@ -35,30 +37,39 @@ public class OrganizationEndpointTest extends AbstractEndpointTest {
 	public void init() {
 		super.init();
 		this.requestHeaders = requestHeaders(
+				headerWithName(OrganizationWebAuthenticationDetails.HEADER_ORGANIZATION_NAME)
+						.description("Organization name")
+						.attributes(key("default").value(""))
+						.attributes(key("required").value("Yes")),
 				headerWithName("Content-Type").description("Payload content type")
 						.attributes(key("default").value(MediaType.APPLICATION_JSON_VALUE))
 						.attributes(key("required").value("Yes")));
 	}
 
 	@Test
-	public void createOrganizationTest() throws JsonProcessingException, Exception {
-		final Organization request = new Organization();
-		request.setName("org 1");
-		request.setEmail("test@test.com");
-		request.setPhone("+112346");
+	public void createPlaceTest() throws JsonProcessingException, Exception {
+		final Organization org = this.createOrganization("org");
+
+		final Place request = new Place();
+		request.setName("place 1");
+		request.setType("type1");
 
 		final List<FieldDescriptor> requestFields = Arrays.asList(
-				this.fieldWithPath("name", "Organization name"),
-				this.fieldWithPath("email", "Email address to contact organization"),
-				this.fieldWithPath("phone", "Phone number to contact organization"));
+				this.fieldWithPath("name", "Place name"),
+				this.fieldWithPath("type", "Place type"),
+				this.fieldWithPath("enabled",
+						"Indicates if the place is enabled. Disabled places cannot be added to a season.",
+						new String[] { "default", "true" }));
 
 		final List<FieldDescriptor> responseFields = new ArrayList<>();
 		responseFields.addAll(Arrays.asList(
-				this.fieldWithPath("id", "Organization id")));
+				this.fieldWithPath("id", "Season id"),
+				this.fieldWithPath("organization", "Organization entity")));
 		responseFields.addAll(requestFields);
 
 		this.mockMvc
-				.perform(post("/api/organization/")
+				.perform(post("/api/place/")
+						.header(OrganizationWebAuthenticationDetails.HEADER_ORGANIZATION_NAME, org.getName())
 						.contentType(MediaType.APPLICATION_JSON)
 						.accept(MediaType.APPLICATION_JSON_VALUE)
 						.content(this.objectMapper.writeValueAsString(request)))
@@ -73,23 +84,27 @@ public class OrganizationEndpointTest extends AbstractEndpointTest {
 	@Test
 	@Transactional(value = TxType.NOT_SUPPORTED)
 	@DirtiesContext
-	public void createDuplicateOrganizationTest() throws JsonProcessingException, Exception {
-		final Organization org = new Organization();
-		org.setName("org 1");
-		org.setEmail("test@test.com");
-		org.setPhone("+112346");
+	public void createDuplicatePlaceTest() throws JsonProcessingException, Exception {
+		final Organization org = this.createOrganization("org");
+
+		final Place place = new Place();
+		place.setName("place 1");
+		place.setType("type1");
 
 		this.mockMvc
-				.perform(post("/api/organization/")
+				.perform(post("/api/place/")
+						.header(OrganizationWebAuthenticationDetails.HEADER_ORGANIZATION_NAME, org.getName())
 						.contentType(MediaType.APPLICATION_JSON)
 						.accept(MediaType.APPLICATION_JSON_VALUE)
-						.content(this.objectMapper.writeValueAsString(org)));
+						.content(this.objectMapper.writeValueAsString(place)));
 
-		final Organization request = new Organization();
-		request.setName(org.getName());
+		final Place request = new Place();
+		request.setName(place.getName());
+		request.setType(place.getType());
 
 		this.mockMvc
-				.perform(post("/api/organization/")
+				.perform(post("/api/place/")
+						.header(OrganizationWebAuthenticationDetails.HEADER_ORGANIZATION_NAME, org.getName())
 						.contentType(MediaType.APPLICATION_JSON)
 						.accept(MediaType.APPLICATION_JSON_VALUE)
 						.content(this.objectMapper.writeValueAsString(request)))

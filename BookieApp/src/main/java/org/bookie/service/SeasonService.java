@@ -21,9 +21,8 @@ public class SeasonService {
 	@Autowired
 	private SeasonPlaceRepository seasonPlaceRepository;
 
-	public Season createSeason(final Season season) {
-		this.seasonRepository.save(season);
-		return season;
+	public Season createOrUpdateSeason(final Season season) {
+		return this.seasonRepository.save(season);
 	}
 
 	public Season getById(final String seasonId) {

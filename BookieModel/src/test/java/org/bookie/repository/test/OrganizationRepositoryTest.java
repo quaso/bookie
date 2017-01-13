@@ -1,5 +1,7 @@
 package org.bookie.repository.test;
 
+import java.util.Optional;
+
 import org.bookie.model.Organization;
 import org.junit.Assert;
 import org.junit.Test;
@@ -14,9 +16,9 @@ public class OrganizationRepositoryTest extends AbstractTest {
 		this.organizationRepository.save(org);
 		Assert.assertNotNull(org.getId());
 
-		final Organization dbOrg = this.organizationRepository.findByName(org.getName());
-		Assert.assertNotNull(dbOrg);
-		Assert.assertEquals(org.getId(), dbOrg.getId());
+		final Optional<Organization> dbOrg = this.organizationRepository.findByName(org.getName());
+		Assert.assertTrue(dbOrg.isPresent());
+		Assert.assertEquals(org.getId(), dbOrg.get().getId());
 	}
 
 	@Test
