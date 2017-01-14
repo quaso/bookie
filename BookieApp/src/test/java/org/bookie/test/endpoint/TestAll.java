@@ -28,66 +28,70 @@ public class TestAll extends AbstractEndpointTest {
 
 		// add organization
 		this.mockMvc
-				.perform(post("/api/organization/")
-						.contentType(MediaType.APPLICATION_JSON)
-						.accept(MediaType.APPLICATION_JSON_VALUE)
-						.content(this.objectMapper.writeValueAsString(org)))
-				.andExpect(status().isCreated())
-				.andExpect(jsonPath("$.id").isNotEmpty());
+				.perform(post("/api/organization/").contentType(MediaType.APPLICATION_JSON)
+						.accept(MediaType.APPLICATION_JSON_VALUE).content(this.objectMapper.writeValueAsString(org)))
+				.andExpect(status().isCreated()).andExpect(jsonPath("$.id").isNotEmpty());
 
 		final Date start = this.date(LocalDate.of(2016, 1, 1));
 		final Date end = this.date(LocalDate.of(2016, 3, 31));
 
 		// create season 1
-		final String seasonId = this.extractId(this.mockMvc.perform(post("/api/season/")
-				.header(OrganizationWebAuthenticationDetails.HEADER_ORGANIZATION_NAME, org.getName())
-				.contentType(MediaType.APPLICATION_JSON)
-				.accept(MediaType.APPLICATION_JSON_VALUE)
-				.content(this.objectMapper.writeValueAsString(this.createSeason(start, end, "season 1"))))
-				.andExpect(status().isCreated())
-				.andExpect(jsonPath("$.id").isNotEmpty()).andReturn());
+		final String seasonId = this
+				.extractId(
+						this.mockMvc
+								.perform(post("/api/season/")
+										.header(OrganizationWebAuthenticationDetails.HEADER_ORGANIZATION_NAME,
+												org.getName())
+										.contentType(MediaType.APPLICATION_JSON)
+										.accept(MediaType.APPLICATION_JSON_VALUE)
+										.content(this.objectMapper
+												.writeValueAsString(this.createSeason(start, end, "season 1"))))
+								.andExpect(status().isCreated()).andExpect(jsonPath("$.id").isNotEmpty()).andReturn());
 
 		// create place 1
-		final String place1Id = this.extractId(this.mockMvc.perform(post("/api/place/")
-				.header(OrganizationWebAuthenticationDetails.HEADER_ORGANIZATION_NAME, org.getName())
-				.contentType(MediaType.APPLICATION_JSON)
-				.accept(MediaType.APPLICATION_JSON_VALUE)
-				.content(this.objectMapper.writeValueAsString(this.createPlace("1", "type1"))))
-				.andExpect(status().isCreated())
-				.andExpect(jsonPath("$.id").isNotEmpty()).andReturn());
+		final String place1Id = this
+				.extractId(
+						this.mockMvc
+								.perform(post("/api/place/")
+										.header(OrganizationWebAuthenticationDetails.HEADER_ORGANIZATION_NAME,
+												org.getName())
+										.contentType(MediaType.APPLICATION_JSON)
+										.accept(MediaType.APPLICATION_JSON_VALUE)
+										.content(this.objectMapper.writeValueAsString(this.createPlace("1", "type1"))))
+								.andExpect(status().isCreated()).andExpect(jsonPath("$.id").isNotEmpty()).andReturn());
 
 		// create place 2
-		final String place2Id = this.extractId(this.mockMvc.perform(post("/api/place/")
-				.header(OrganizationWebAuthenticationDetails.HEADER_ORGANIZATION_NAME, org.getName())
-				.contentType(MediaType.APPLICATION_JSON)
-				.accept(MediaType.APPLICATION_JSON_VALUE)
-				.content(this.objectMapper.writeValueAsString(this.createPlace("2", "type1"))))
-				.andExpect(status().isCreated())
-				.andExpect(jsonPath("$.id").isNotEmpty()).andReturn());
+		final String place2Id = this
+				.extractId(
+						this.mockMvc
+								.perform(post("/api/place/")
+										.header(OrganizationWebAuthenticationDetails.HEADER_ORGANIZATION_NAME,
+												org.getName())
+										.contentType(MediaType.APPLICATION_JSON)
+										.accept(MediaType.APPLICATION_JSON_VALUE)
+										.content(this.objectMapper.writeValueAsString(this.createPlace("2", "type1"))))
+								.andExpect(status().isCreated()).andExpect(jsonPath("$.id").isNotEmpty()).andReturn());
 
 		// add place 1 to season 1
-		this.mockMvc.perform(post("/api/season/place/")
-				.param("seasonId", seasonId)
-				.param("placeId", place1Id)
-				.contentType(MediaType.APPLICATION_JSON)
-				.accept(MediaType.APPLICATION_JSON_VALUE))
+		this.mockMvc
+				.perform(post("/api/season/place/").param("seasonId", seasonId).param("placeId", place1Id)
+						.contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON_VALUE))
 				.andExpect(status().isCreated());
 
 		// create user 1
-		final String user1Id = this.extractId(this.mockMvc.perform(post("/api/user/")
-				.contentType(MediaType.APPLICATION_JSON)
-				.accept(MediaType.APPLICATION_JSON_VALUE)
-				.content(this.objectMapper.writeValueAsString(this.createUser("tester"))))
-				.andExpect(status().isCreated())
-				.andExpect(jsonPath("$.id").isNotEmpty()).andReturn());
+		final String str = "{\"password\":\"pwd\","
+				+ this.objectMapper.writeValueAsString(this.createUser("tester")).substring(1);
+		final String user1Id = this.extractId(this.mockMvc
+				.perform(post("/api/user/").contentType(MediaType.APPLICATION_JSON)
+						.accept(MediaType.APPLICATION_JSON_VALUE).content(str))
+				.andExpect(status().isCreated()).andExpect(jsonPath("$.id").isNotEmpty()).andReturn());
 
 		// add user 1 to role admin
-		this.mockMvc.perform(post("/api/user/role/")
-				.header(OrganizationWebAuthenticationDetails.HEADER_ORGANIZATION_NAME, org.getName())
-				.param("userId", user1Id)
-				.param("roleName", "ROLE_ADMIN")
-				.contentType(MediaType.APPLICATION_JSON)
-				.accept(MediaType.APPLICATION_JSON_VALUE))
+		this.mockMvc
+				.perform(post("/api/user/role/")
+						.header(OrganizationWebAuthenticationDetails.HEADER_ORGANIZATION_NAME, org.getName())
+						.param("userId", user1Id).param("roleName", "ROLE_ADMIN")
+						.contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON_VALUE))
 				.andExpect(status().isCreated());
 	}
 
