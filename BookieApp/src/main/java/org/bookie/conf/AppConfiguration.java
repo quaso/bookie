@@ -24,7 +24,6 @@ public class AppConfiguration {
 
 	@Bean
 	public FilterRegistrationBean exceptionHandlerFilterRegistration() {
-
 		FilterRegistrationBean registration = new FilterRegistrationBean();
 		registration.setFilter(new UncaughtExceptionFilter());
 		registration.addUrlPatterns("/*");

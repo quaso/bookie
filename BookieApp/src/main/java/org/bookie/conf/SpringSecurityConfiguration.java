@@ -60,7 +60,12 @@ public class SpringSecurityConfiguration extends WebSecurityConfigurerAdapter {
 //                .loginProcessingUrl("/api/login/")
 //                .successHandler(authenticationSuccessHandler)
 //                .failureHandler(authenticationFailureHandler);
-	}
+
+
+        // IMPORTANT
+        http.httpBasic()
+                .authenticationDetailsSource(this.authenticationDetailsSource);
+    }
 
 
 	//	@Override

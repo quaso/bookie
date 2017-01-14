@@ -44,8 +44,8 @@
 			</activation>
 			<modules>
 				<module>BookieModel</module>
-				<module>BookieApp</module>
 				<module>BookieFrontend</module>
+				<module>BookieApp</module>
 			</modules>
 		</profile>
 		

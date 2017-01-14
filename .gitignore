@@ -1,4 +1,5 @@
 target/
+/BookieApp/src/main/resources/web/
 
 ### STS ###
 .apt_generated
@@ -16,4 +17,4 @@ target/
 
 hsql/*
 !hsql/runBookieDb.bat
-!hsql/runBookieDb.sh 
+!hsql/runBookieDb.sh
