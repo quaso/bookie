@@ -59,9 +59,4 @@ public class PlaceEndpoint {
 	public ResponseEntity<Object> handleException(final OrganizationNotFoundException ex) {
 		return new ResponseEntity<Object>(ex.getMessage(), HttpStatus.NOT_FOUND);
 	}
-
-	@ExceptionHandler(DataIntegrityViolationException.class)
-	public ResponseEntity<Object> handleException(final DataIntegrityViolationException ex) {
-		return new ResponseEntity<Object>(ex.getMessage(), HttpStatus.CONFLICT);
-	}
 }

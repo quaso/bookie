@@ -1,8 +1,11 @@
 package org.bookie.web.rest;
 
-import org.apache.commons.lang3.StringUtils;
+import org.bookie.service.OrganizationService;
+import org.bookie.service.SeasonService;
+import org.bookie.web.utils.EmberConfigManipulationUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -13,8 +16,13 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.io.IOException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.nio.file.Files;
-import java.util.Objects;
+import java.util.Arrays;
+import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Created by kvasnicka on 1/13/17.
@@ -27,21 +35,29 @@ public class WebResourceHandler {
 
     private Logger logger = LoggerFactory.getLogger(WebResourceHandler.class);
 
+    @Autowired
+    private SeasonService seasonService;
+
+    @Autowired
+    private OrganizationService organizationService;
+
     @ExceptionHandler(NoHandlerFoundException.class)
     public void handleError404(HttpServletRequest request, HttpServletResponse response, NoHandlerFoundException e) {
         // index.html redirect
         try {
             if ("GET".equalsIgnoreCase(e.getHttpMethod())) {
-                String findPath = e.getRequestURL();
-                if (!"".equals(request.getContextPath())) {
-                    if (Objects.equals(findPath, request.getContextPath())) {
+                String requestUrl = e.getRequestURL();
+             /*   if (!"".equals(request.getContextPath())) {
+                    if (Objects.equals(requestUrl, request.getContextPath())) {
                         response.sendRedirect(request.getContextPath() + "/");
                         response.flushBuffer();
                         return;
                     }
-                    findPath = StringUtils.replaceOnce(findPath, request.getContextPath(), "");
-                }
-                File fileToResponse = new ClassPathResource("/" + FRONTEND_RESOURCE_DIR + findPath).getFile();
+                    requestUrl = StringUtils.replaceOnce(requestUrl, request.getContextPath(), "");
+                }*/
+
+                //process resource file
+                File fileToResponse = new ClassPathResource("/" + FRONTEND_RESOURCE_DIR + requestUrl).getFile();
                 if (fileToResponse.exists() && fileToResponse.isFile() && fileToResponse.canRead()) {
                     response.setContentType(Files.probeContentType(fileToResponse.toPath()));
                     response.setCharacterEncoding("UTF-8");
@@ -51,6 +67,8 @@ public class WebResourceHandler {
                 }
 
                 // Default INDEX.HTML
+                String organizationName = request.getParameter("org");
+
                 fileToResponse = new ClassPathResource("/" + FRONTEND_RESOURCE_DIR + "/index.html").getFile();
                 String content = new String(Files.readAllBytes(fileToResponse.toPath()));
                 if (!"".equals(request.getContextPath())) {
@@ -63,7 +81,8 @@ public class WebResourceHandler {
                     content = content.replaceAll("src=\"\\/assets", "src=\"" + rootURL + "assets");
                 }
 
-//                content = processEmberConfig(content);
+
+                content = processEmberConfig(content, organizationName);
 
                 response.setContentType(Files.probeContentType(fileToResponse.toPath()));
                 response.setCharacterEncoding("UTF-8");
@@ -78,7 +97,7 @@ public class WebResourceHandler {
 
     }
 
- /*   private String processEmberConfig(String content) {
+    private String processEmberConfig(String content, String organizationName) {
 
         String CONFIG_START = "config/environment\" content=\"";
 
@@ -99,8 +118,7 @@ public class WebResourceHandler {
             configJson = URLDecoder.decode(configJsonEncoded, "UTF-8");
 
             EmberConfigManipulationUtil.EmberConfig emberConfig = EmberConfigManipulationUtil.parseConfig(configJson)
-                    .addConfig("serverNode", FrontendLoggingUtil.getServerNode());
-
+                    .addConfig("bookieConfig", generateBookieConfig(organizationName));
 
             String modifiedConfig = emberConfig.toJsonString();
 
@@ -109,7 +127,54 @@ public class WebResourceHandler {
             logger.error("cannot process ember config", e);
             return content;
         }
+    }
+
+    private BookieConfig generateBookieConfig(String organizationName) {
+        BookieConfig config = new BookieConfig();
+        config.setOrganizationName(organizationName); //TODO read from services
+        config.setCourtNames(Arrays.asList("K1", "K2", "K3", "K4"));
+        config.setHoursPerDay(15);
+        config.setStartOfDay(7);
+        return config;
+    }
+
+    private static class BookieConfig {
+        private String organizationName;
+        private int hoursPerDay;
+        private int startOfDay;
+        private List<String> courtNames;
 
 
-    }*/
+        public int getHoursPerDay() {
+            return hoursPerDay;
+        }
+
+        public void setHoursPerDay(int hoursPerDay) {
+            this.hoursPerDay = hoursPerDay;
+        }
+
+        public int getStartOfDay() {
+            return startOfDay;
+        }
+
+        public void setStartOfDay(int startOfDay) {
+            this.startOfDay = startOfDay;
+        }
+
+        public List<String> getCourtNames() {
+            return courtNames;
+        }
+
+        public void setCourtNames(List<String> courtNames) {
+            this.courtNames = courtNames;
+        }
+
+        public String getOrganizationName() {
+            return organizationName;
+        }
+
+        public void setOrganizationName(String organizationName) {
+            this.organizationName = organizationName;
+        }
+    }
 }

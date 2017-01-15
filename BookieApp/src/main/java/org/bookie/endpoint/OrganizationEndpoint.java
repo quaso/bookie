@@ -30,9 +30,4 @@ public class OrganizationEndpoint {
 		this.organizationService.createOrUpdateOrganization(organization);
 		return new ResponseEntity<>(organization, HttpStatus.OK);
 	}
-
-	@ExceptionHandler(DataIntegrityViolationException.class)
-	public ResponseEntity<Object> handleException(final DataIntegrityViolationException ex) {
-		return new ResponseEntity<Object>(ex.getMessage(), HttpStatus.CONFLICT);
-	}
 }

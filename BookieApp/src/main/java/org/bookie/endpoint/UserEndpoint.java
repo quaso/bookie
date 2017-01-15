@@ -75,13 +75,4 @@ public class UserEndpoint {
 	public ResponseEntity<Object> handlePreConditionException(final Exception ex) {
 		return new ResponseEntity<Object>(ex.getMessage(), HttpStatus.PRECONDITION_FAILED);
 	}
-
-	@ExceptionHandler(ConstraintViolationException.class)
-	public ResponseEntity<Object> handleException(final ConstraintViolationException ex) {
-		String message = ex.getMessage();
-		if (ex.getSQLException() != null) {
-			message = ex.getMessage() + ": " + ex.getSQLException().getMessage();
-		}
-		return new ResponseEntity<Object>(message, HttpStatus.CONFLICT);
-	}
 }

@@ -8,6 +8,8 @@ import org.bookie.exception.NotFreeException;
 import org.bookie.model.Booking;
 import org.bookie.model.BookingEx;
 import org.bookie.service.BookingService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
@@ -29,7 +31,7 @@ public class BookingEndpoint {
 	private BookingService bookingService;
 
 	@RequestMapping(method = RequestMethod.POST, value = "/")
-	public ResponseEntity<?> createBooking(final @RequestHeader String organizationName,
+	public ResponseEntity<?> createBooking(final @RequestHeader String organizationName, //TODO----------organizationName is not used
 			final @RequestBody BookingEx booking) throws NotFreeException {
 		final Booking result = this.bookingService.createBooking(booking.getTimeStart(), booking.getTimeEnd(),
 				booking.getType(), booking.getOwnerId(), booking.getPlaceId(), booking.getNote());
@@ -48,11 +50,6 @@ public class BookingEndpoint {
 	@ResponseStatus(HttpStatus.OK)
 	public void deleteBooking(final String bookingId) {
 		this.bookingService.delete(bookingId);
-	}
-
-	@ExceptionHandler(EmptyResultDataAccessException.class)
-	public ResponseEntity<Object> handleException(final EmptyResultDataAccessException ex) {
-		return new ResponseEntity<Object>(ExceptionUtils.getRootCauseMessage(ex), HttpStatus.NOT_FOUND);
 	}
 
 	@ExceptionHandler(NotFreeException.class)
