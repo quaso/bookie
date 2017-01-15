@@ -66,7 +66,7 @@ public class BookingService {
 			throw new IllegalStateException("Place could not be identified");
 		}
 
-		final Season season = this.seasonService.getByDate(place.getOrganization().getName(), timeStart);
+		final Season season = this.seasonService.getByDate(place.getOrganization().getCode(), timeStart);
 		if (season == null) {
 			throw new IllegalStateException("No season is defined for requested booking date");
 		}
@@ -95,7 +95,7 @@ public class BookingService {
 		//TODO: check and send email to the others about vacant time
 	}
 
-	public List<? extends OwnerTimeSlot> find(final String organizationName, final Date timeStart, final Date timeEnd,
+	public List<? extends OwnerTimeSlot> find(final String organizationCode, final Date timeStart, final Date timeEnd,
 			final Collection<String> types, final Collection<String> placeIds, final String ownerId) {
 		final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		boolean admin = false;
@@ -106,10 +106,10 @@ public class BookingService {
 		}
 		final List<OwnerTimeSlot> list;
 		if (admin) {
-			list = this.bookingRepository.findBooking(organizationName, timeStart, timeEnd,
+			list = this.bookingRepository.findBooking(organizationCode, timeStart, timeEnd,
 					types, placeIds, ownerId);
 		} else {
-			list = this.bookingRepository.findWithOwner(organizationName, timeStart, timeEnd,
+			list = this.bookingRepository.findWithOwner(organizationCode, timeStart, timeEnd,
 					types, placeIds, ownerId);
 		}
 
@@ -125,7 +125,7 @@ public class BookingService {
 		return list;
 	}
 
-	public Set<LocalDate> findFreeTimeSlots(final String organizationName, final int duration, final int minutesStart,
+	public Set<LocalDate> findFreeTimeSlots(final String organizationCode, final int duration, final int minutesStart,
 			final int minutesEnd, final Collection<LocalDate> days) {
 		if (minutesStart < 0 || minutesStart > 24 * 60) {
 			throw new IllegalArgumentException("TimeStart");
@@ -144,7 +144,7 @@ public class BookingService {
 			final Date end = Date
 					.from(date.atStartOfDay().plusMinutes(minutesEnd).atZone(ZoneId.systemDefault()).toInstant());
 			// get existing bookings which are in desired time frame
-			final List<OwnerTimeSlot> timeSlots = this.bookingRepository.findNoOwner(organizationName, start, end, null,
+			final List<OwnerTimeSlot> timeSlots = this.bookingRepository.findNoOwner(organizationCode, start, end, null,
 					null, null);
 
 			if (timeSlots.isEmpty()) {

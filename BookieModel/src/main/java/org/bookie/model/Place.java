@@ -65,7 +65,7 @@ public class Place extends AbstractEntity {
 	@Override
 	public String toString() {
 		return "Place [name=" + this.name + ", type=" + this.type + ", enabled=" + this.enabled + ", organization="
-				+ this.organization.getName() + "]";
+				+ this.organization.getCode() + "]";
 	}
 
 }

@@ -52,7 +52,7 @@ public class OrganizationUserRole extends AbstractEntity {
 
 	@Override
 	public String toString() {
-		return "OrganizationUserRole [organization=" + this.organization.getName() + ", user=" + this.user.getUsername()
+		return "OrganizationUserRole [organization=" + this.organization.getCode() + ", user=" + this.user.getUsername()
 				+ ", role=" + this.role.getName() + "]";
 	}
 

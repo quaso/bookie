@@ -78,6 +78,7 @@ public class OrganizationEndpointTest extends AbstractEndpointTest {
 		org.setName("org 1");
 		org.setEmail("test@test.com");
 		org.setPhone("+112346");
+		org.setCode("org1");
 
 		this.mockMvc
 				.perform(post("/api/organization/")

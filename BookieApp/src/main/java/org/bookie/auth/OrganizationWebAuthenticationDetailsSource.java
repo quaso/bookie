@@ -14,17 +14,17 @@ public class OrganizationWebAuthenticationDetailsSource extends WebAuthenticatio
 
 	@SuppressWarnings("serial")
 	public class OrganizationWebAuthenticationDetails extends WebAuthenticationDetails {
-		public static final String HEADER_ORGANIZATION_NAME = "organizationName";
+		public static final String HEADER_ORGANIZATION_NAME = "organizationCode";
 
-		private final String organizationName;
+		private final String organizationCode;
 
 		public OrganizationWebAuthenticationDetails(final HttpServletRequest request) {
 			super(request);
-			this.organizationName = request.getHeader(HEADER_ORGANIZATION_NAME);
+			this.organizationCode = request.getHeader(HEADER_ORGANIZATION_NAME);
 		}
 
-		public String getOrganizationName() {
-			return this.organizationName;
+		public String getOrganizationCode() {
+			return this.organizationCode;
 		}
 
 	}

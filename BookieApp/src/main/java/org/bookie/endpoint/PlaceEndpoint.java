@@ -27,18 +27,18 @@ public class PlaceEndpoint {
 	private OrganizationService organizationService;
 
 	@RequestMapping(method = RequestMethod.POST, value = "/")
-	public ResponseEntity<?> createPlace(final @RequestHeader String organizationName,
+	public ResponseEntity<?> createPlace(final @RequestHeader String organizationCode,
 			@RequestBody final Place place) throws OrganizationNotFoundException {
-		final Organization org = this.organizationService.findByName(organizationName);
+		final Organization org = this.organizationService.findByCode(organizationCode);
 		place.setOrganization(org);
 		this.placeService.createOrUpdatePlace(place);
 		return new ResponseEntity<>(place, HttpStatus.CREATED);
 	}
 
 	@RequestMapping(method = RequestMethod.PUT, value = "/")
-	public ResponseEntity<?> updateOrganization(final @RequestHeader String organizationName,
+	public ResponseEntity<?> updateOrganization(final @RequestHeader String organizationCode,
 			@RequestBody final Place place) throws OrganizationNotFoundException {
-		final Organization org = this.organizationService.findByName(organizationName);
+		final Organization org = this.organizationService.findByCode(organizationCode);
 		place.setOrganization(org);
 		this.placeService.createOrUpdatePlace(place);
 		return new ResponseEntity<>(place, HttpStatus.OK);

@@ -27,18 +27,18 @@ public class SeasonRepositoryTest extends AbstractTest {
 
 		Date day = this.date(LocalDate.of(2016, 3, 1));
 		Season season = this.seasonRepository
-				.findByOrganizationNameEqualsAndDateStartLessThanEqualAndDateEndGreaterThanEqual(org2.getName(), day,
+				.findByOrganizationCodeEqualsAndDateStartLessThanEqualAndDateEndGreaterThanEqual(org2.getName(), day,
 						day);
 		Assert.assertNotNull(season);
 		Assert.assertEquals(season12.getId(), season.getId());
 
-		season = this.seasonRepository.findByOrganizationNameEqualsAndDateStartLessThanEqualAndDateEndGreaterThanEqual(
+		season = this.seasonRepository.findByOrganizationCodeEqualsAndDateStartLessThanEqualAndDateEndGreaterThanEqual(
 				org1.getName(), day, day);
 		Assert.assertNotNull(season);
 		Assert.assertEquals(season11.getId(), season.getId());
 
 		day = this.date(LocalDate.of(2016, 4, 1));
-		season = this.seasonRepository.findByOrganizationNameEqualsAndDateStartLessThanEqualAndDateEndGreaterThanEqual(
+		season = this.seasonRepository.findByOrganizationCodeEqualsAndDateStartLessThanEqualAndDateEndGreaterThanEqual(
 				org2.getName(), day, day);
 		Assert.assertNotNull(season);
 		Assert.assertEquals(season22.getId(), season.getId());

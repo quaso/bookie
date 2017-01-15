@@ -91,7 +91,7 @@ public class UserService {
 				.orElseThrow(() -> new UserNotFoundException(null, username));
 	}
 
-	public void addUserToRole(final String userId, final String roleName, final String organizationName)
+	public void addUserToRole(final String userId, final String roleName, final String organizationCode)
 			throws NotFoundException {
 		final User user = this.userRepository.findOne(userId);
 		if (user == null) {
@@ -101,19 +101,19 @@ public class UserService {
 		if (role == null) {
 			throw new RoleNotFoundException(roleName);
 		}
-		final Organization org = this.organizationService.findByName(organizationName);
+		final Organization org = this.organizationService.findByCode(organizationCode);
 		final OrganizationUserRole entity = new OrganizationUserRole();
 		entity.setValues(org, user, role);
 		this.organizationUserRoleRepository.save(entity);
 	}
 
-	public void deleteUserFromRole(final String userId, final String roleName, final String organizationName) {
-		this.organizationUserRoleRepository.deleteByUserIdAndRoleNameAndOrganizationName(userId, roleName,
-				organizationName);
+	public void deleteUserFromRole(final String userId, final String roleName, final String organizationCode) {
+		this.organizationUserRoleRepository.deleteByUserIdAndRoleNameAndOrganizationCode(userId, roleName,
+				organizationCode);
 	}
 
-	public Set<Role> findRolesForUserOrganization(final User user, final String organizationName) {
-		return this.organizationUserRoleRepository.getByUserIdAndOrganizationName(user.getId(), organizationName)
+	public Set<Role> findRolesForUserOrganization(final User user, final String organizationCode) {
+		return this.organizationUserRoleRepository.getByUserIdAndOrganizationCode(user.getId(), organizationCode)
 				.stream().map(our -> our.getRole()).collect(Collectors.toSet());
 	}
 

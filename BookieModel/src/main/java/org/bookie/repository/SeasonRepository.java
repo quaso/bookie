@@ -9,6 +9,6 @@ import org.springframework.data.repository.CrudRepository;
 
 @Transactional
 public interface SeasonRepository extends CrudRepository<Season, String> {
-	public Season findByOrganizationNameEqualsAndDateStartLessThanEqualAndDateEndGreaterThanEqual(
-			String organizationName, Date dateStart, Date dateEnd);
+	public Season findByOrganizationCodeEqualsAndDateStartLessThanEqualAndDateEndGreaterThanEqual(
+			String organizationCode, Date dateStart, Date dateEnd);
 }

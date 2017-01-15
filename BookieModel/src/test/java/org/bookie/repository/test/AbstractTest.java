@@ -1,33 +1,18 @@
 package org.bookie.repository.test;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.Date;
-
-import javax.transaction.Transactional;
-
-import org.bookie.model.Booking;
-import org.bookie.model.Organization;
-import org.bookie.model.OrganizationUserRole;
-import org.bookie.model.Place;
-import org.bookie.model.Role;
-import org.bookie.model.Season;
-import org.bookie.model.SeasonPlace;
-import org.bookie.model.User;
-import org.bookie.repository.BookingRepositoryCustom;
-import org.bookie.repository.OrganizationRepository;
-import org.bookie.repository.OrganizationUserRoleRepository;
-import org.bookie.repository.PlaceRepository;
-import org.bookie.repository.RoleRepository;
-import org.bookie.repository.SeasonPlaceRepository;
-import org.bookie.repository.SeasonRepository;
-import org.bookie.repository.UserRepository;
+import org.bookie.model.*;
+import org.bookie.repository.*;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import javax.transaction.Transactional;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = MainTestConfiguration.class)
@@ -61,7 +46,8 @@ public abstract class AbstractTest {
 
 	protected final Organization createOrganization(final String name) {
 		final Organization org = new Organization();
-		org.setName(name);
+		org.setName("Name_" + name);
+		org.setCode(name);
 		return this.organizationRepository.save(org);
 	}
 

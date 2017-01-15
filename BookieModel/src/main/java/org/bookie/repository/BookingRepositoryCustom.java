@@ -11,13 +11,13 @@ import org.springframework.data.repository.NoRepositoryBean;
 @NoRepositoryBean
 public interface BookingRepositoryCustom extends BookingRepository {
 
-	public List<OwnerTimeSlot> findNoOwner(final String organizationName, final Date timeStart, final Date timeEnd,
+	public List<OwnerTimeSlot> findNoOwner(final String organizationCode, final Date timeStart, final Date timeEnd,
 			final Collection<String> types, final Collection<String> placeIds, final String ownerId);
 
-	public List<OwnerTimeSlot> findWithOwner(final String organizationName, final Date timeStart, final Date timeEnd,
+	public List<OwnerTimeSlot> findWithOwner(final String organizationCode, final Date timeStart, final Date timeEnd,
 			final Collection<String> types, final Collection<String> placeIds, final String ownerId);
 
-	public List<OwnerTimeSlot> findBooking(final String organizationName, final Date timeStart, final Date timeEnd,
+	public List<OwnerTimeSlot> findBooking(final String organizationCode, final Date timeStart, final Date timeEnd,
 			final Collection<String> types, final Collection<String> placeIds, final String ownerId);
 
 	public boolean checkFreeTime(Booking booking);

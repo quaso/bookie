@@ -10,8 +10,8 @@ import org.springframework.data.repository.CrudRepository;
 @Transactional
 public interface OrganizationUserRoleRepository extends CrudRepository<OrganizationUserRole, String> {
 
-	public Set<OrganizationUserRole> getByUserIdAndOrganizationName(String userId, String organizationName);
+	public Set<OrganizationUserRole> getByUserIdAndOrganizationCode(String userId, String organizationCode);
 
-	public void deleteByUserIdAndRoleNameAndOrganizationName(String userId, String roleName, String organizationName);
+	public void deleteByUserIdAndRoleNameAndOrganizationCode(String userId, String roleName, String organizationCode);
 
 }

@@ -13,6 +13,7 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.UniqueConstraint;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.annotations.Proxy;
 
 @Entity
@@ -40,6 +41,7 @@ public class Season extends AbstractEntity {
 	@ManyToOne(targetEntity = Organization.class, fetch = FetchType.LAZY)
 	@org.hibernate.annotations.Cascade({ org.hibernate.annotations.CascadeType.LOCK })
 	@JoinColumns({ @JoinColumn(name = "organizationId", referencedColumnName = "id", nullable = false) })
+	@JsonIgnore
 	private Organization organization;
 
 	public void setName(final String value) {

@@ -41,7 +41,7 @@ public class TestAll extends AbstractEndpointTest {
 						this.mockMvc
 								.perform(post("/api/season/")
 										.header(OrganizationWebAuthenticationDetails.HEADER_ORGANIZATION_NAME,
-												org.getName())
+												org.getCode())
 										.contentType(MediaType.APPLICATION_JSON)
 										.accept(MediaType.APPLICATION_JSON_VALUE)
 										.content(this.objectMapper
@@ -54,7 +54,7 @@ public class TestAll extends AbstractEndpointTest {
 						this.mockMvc
 								.perform(post("/api/place/")
 										.header(OrganizationWebAuthenticationDetails.HEADER_ORGANIZATION_NAME,
-												org.getName())
+												org.getCode())
 										.contentType(MediaType.APPLICATION_JSON)
 										.accept(MediaType.APPLICATION_JSON_VALUE)
 										.content(this.objectMapper.writeValueAsString(this.createPlace("1", "type1"))))
@@ -66,7 +66,7 @@ public class TestAll extends AbstractEndpointTest {
 						this.mockMvc
 								.perform(post("/api/place/")
 										.header(OrganizationWebAuthenticationDetails.HEADER_ORGANIZATION_NAME,
-												org.getName())
+												org.getCode())
 										.contentType(MediaType.APPLICATION_JSON)
 										.accept(MediaType.APPLICATION_JSON_VALUE)
 										.content(this.objectMapper.writeValueAsString(this.createPlace("2", "type1"))))
@@ -89,7 +89,7 @@ public class TestAll extends AbstractEndpointTest {
 		// add user 1 to role admin
 		this.mockMvc
 				.perform(post("/api/user/role/")
-						.header(OrganizationWebAuthenticationDetails.HEADER_ORGANIZATION_NAME, org.getName())
+						.header(OrganizationWebAuthenticationDetails.HEADER_ORGANIZATION_NAME, org.getCode())
 						.param("userId", user1Id).param("roleName", "ROLE_ADMIN")
 						.contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON_VALUE))
 				.andExpect(status().isCreated());
@@ -106,6 +106,7 @@ public class TestAll extends AbstractEndpointTest {
 		org.setName("org 1");
 		org.setEmail("test@test.com");
 		org.setPhone("+112346");
+		org.setCode("org1");
 		return org;
 	}
 

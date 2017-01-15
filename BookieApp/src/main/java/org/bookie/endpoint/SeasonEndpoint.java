@@ -36,23 +36,23 @@ public class SeasonEndpoint {
 	private OrganizationService organizationService;
 
 	@RequestMapping(method = RequestMethod.POST, value = "/")
-	public ResponseEntity<?> createSeason(final @RequestHeader String organizationName,
+	public ResponseEntity<Season> createSeason(final @RequestHeader String organizationCode,
 			@RequestBody final Season season) throws OrganizationNotFoundException {
-		final Organization org = this.organizationService.findByName(organizationName);
+		final Organization org = this.organizationService.findByCode(organizationCode);
 		season.setOrganization(org);
 		this.seasonService.createOrUpdateSeason(season);
 		return new ResponseEntity<>(season, HttpStatus.CREATED);
 	}
 
 	@RequestMapping(method = RequestMethod.GET, value = "/")
-	public ResponseEntity<SeasonDetails> getCurrent(final @RequestHeader String organizationName) {
-		return this.find(() -> this.seasonService.getDetailsCurrent(organizationName));
+	public ResponseEntity<SeasonDetails> getCurrent(final @RequestHeader String organizationCode) {
+		return this.find(() -> this.seasonService.getDetailsCurrent(organizationCode));
 	}
 
 	@RequestMapping(method = RequestMethod.GET, value = "/{date}")
-	public ResponseEntity<SeasonDetails> getByDate(@RequestHeader final String organizationName,
+	public ResponseEntity<SeasonDetails> getByDate(@RequestHeader final String organizationCode,
 			@PathVariable @DateTimeFormat(pattern = "yyyyMMdd") final Date date) {
-		return this.find(() -> this.seasonService.getDetailsByDate(organizationName, date));
+		return this.find(() -> this.seasonService.getDetailsByDate(organizationCode, date));
 	}
 
 	@RequestMapping(method = RequestMethod.POST, value = "/place/")

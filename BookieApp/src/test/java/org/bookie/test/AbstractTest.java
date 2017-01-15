@@ -66,6 +66,7 @@ public abstract class AbstractTest {
 	protected final Organization createOrganization(final String name) {
 		final Organization org = new Organization();
 		org.setName(name);
+		org.setCode(name);
 		return this.organizationRepository.save(org);
 	}
 

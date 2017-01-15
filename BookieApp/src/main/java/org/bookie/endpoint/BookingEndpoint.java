@@ -31,7 +31,7 @@ public class BookingEndpoint {
 	private BookingService bookingService;
 
 	@RequestMapping(method = RequestMethod.POST, value = "/")
-	public ResponseEntity<?> createBooking(final @RequestHeader String organizationName, //TODO----------organizationName is not used
+	public ResponseEntity<?> createBooking(final @RequestHeader String organizationCode, //TODO----------organizationCode is not used
 			final @RequestBody BookingEx booking) throws NotFreeException {
 		final Booking result = this.bookingService.createBooking(booking.getTimeStart(), booking.getTimeEnd(),
 				booking.getType(), booking.getOwnerId(), booking.getPlaceId(), booking.getNote());
@@ -40,10 +40,10 @@ public class BookingEndpoint {
 	}
 
 	@RequestMapping(method = RequestMethod.GET, value = "/findFree/")
-	public Set<LocalDate> findFreeTimeSlots(final @RequestHeader String organizationName,
+	public Set<LocalDate> findFreeTimeSlots(final @RequestHeader String organizationCode,
 			@RequestParam final int duration, @RequestParam final int timeStart, @RequestParam final int timeEnd,
 			@RequestParam final Set<LocalDate> days) {
-		return this.bookingService.findFreeTimeSlots(organizationName, duration, timeStart, timeEnd, days);
+		return this.bookingService.findFreeTimeSlots(organizationCode, duration, timeStart, timeEnd, days);
 	}
 
 	@RequestMapping(method = RequestMethod.DELETE, value = "/")

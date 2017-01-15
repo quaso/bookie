@@ -49,16 +49,16 @@ public class DatabaseAuthenticationProvider extends AbstractUserDetailsAuthentic
 	@Override
 	protected UserDetails retrieveUser(final String username, final UsernamePasswordAuthenticationToken authentication)
 			throws AuthenticationException {
-		String organizationName = null;
+		String organizationCode = null;
 		if (authentication.getDetails() != null
 				&& authentication.getDetails() instanceof OrganizationWebAuthenticationDetails) {
-			organizationName = ((OrganizationWebAuthenticationDetails) authentication.getDetails())
-					.getOrganizationName();
+			organizationCode = ((OrganizationWebAuthenticationDetails) authentication.getDetails())
+					.getOrganizationCode();
 		}
 
 		try {
 			final org.bookie.model.User dbUser = this.userService.findByUsername(username);
-			return new LoggedUser(dbUser, this.userService.findRolesForUserOrganization(dbUser, organizationName));
+			return new LoggedUser(dbUser, this.userService.findRolesForUserOrganization(dbUser, organizationCode));
 		} catch (final UserNotFoundException e) {
 			throw new UsernameNotFoundException(username);
 		}

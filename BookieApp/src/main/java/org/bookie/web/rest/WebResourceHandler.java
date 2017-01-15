@@ -1,6 +1,11 @@
 package org.bookie.web.rest;
 
+import org.bookie.exception.OrganizationNotFoundException;
+import org.bookie.model.Organization;
+import org.bookie.model.Season;
+import org.bookie.model.SeasonDetails;
 import org.bookie.service.OrganizationService;
+import org.bookie.service.PlaceService;
 import org.bookie.service.SeasonService;
 import org.bookie.web.utils.EmberConfigManipulationUtil;
 import org.slf4j.Logger;
@@ -20,9 +25,7 @@ import java.io.IOException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.file.Files;
-import java.util.Arrays;
-import java.util.List;
-import java.util.regex.Pattern;
+import java.util.Date;
 
 /**
  * Created by kvasnicka on 1/13/17.
@@ -40,6 +43,7 @@ public class WebResourceHandler {
 
     @Autowired
     private OrganizationService organizationService;
+
 
     @ExceptionHandler(NoHandlerFoundException.class)
     public void handleError404(HttpServletRequest request, HttpServletResponse response, NoHandlerFoundException e) {
@@ -67,7 +71,7 @@ public class WebResourceHandler {
                 }
 
                 // Default INDEX.HTML
-                String organizationName = request.getParameter("org");
+                String organizationCode = request.getParameter("org");
 
                 fileToResponse = new ClassPathResource("/" + FRONTEND_RESOURCE_DIR + "/index.html").getFile();
                 String content = new String(Files.readAllBytes(fileToResponse.toPath()));
@@ -82,7 +86,7 @@ public class WebResourceHandler {
                 }
 
 
-                content = processEmberConfig(content, organizationName);
+                content = processEmberConfig(content, organizationCode);
 
                 response.setContentType(Files.probeContentType(fileToResponse.toPath()));
                 response.setCharacterEncoding("UTF-8");
@@ -97,7 +101,7 @@ public class WebResourceHandler {
 
     }
 
-    private String processEmberConfig(String content, String organizationName) {
+    private String processEmberConfig(String content, String organizationCode) throws OrganizationNotFoundException {
 
         String CONFIG_START = "config/environment\" content=\"";
 
@@ -118,7 +122,7 @@ public class WebResourceHandler {
             configJson = URLDecoder.decode(configJsonEncoded, "UTF-8");
 
             EmberConfigManipulationUtil.EmberConfig emberConfig = EmberConfigManipulationUtil.parseConfig(configJson)
-                    .addConfig("bookieConfig", generateBookieConfig(organizationName));
+                    .addConfig("bookieConfig", generateBookieConfig(organizationCode));
 
             String modifiedConfig = emberConfig.toJsonString();
 
@@ -129,52 +133,39 @@ public class WebResourceHandler {
         }
     }
 
-    private BookieConfig generateBookieConfig(String organizationName) {
+    private BookieConfig generateBookieConfig(String organizationCode) throws OrganizationNotFoundException {
         BookieConfig config = new BookieConfig();
-        config.setOrganizationName(organizationName); //TODO read from services
-        config.setCourtNames(Arrays.asList("K1", "K2", "K3", "K4"));
-        config.setHoursPerDay(15);
-        config.setStartOfDay(7);
+
+        Organization organization = organizationService.findByCode(organizationCode);
+        config.setOrganization(organization);
+
+        SeasonDetails seasonDetails = seasonService.getDetailsByDate(organization.getCode(), new Date());
+        config.setSeason(seasonDetails.getSeason());
+//TODO places        config.setPlaces(seasonDetails.getPlaces());
+
         return config;
     }
 
     private static class BookieConfig {
-        private String organizationName;
-        private int hoursPerDay;
-        private int startOfDay;
-        private List<String> courtNames;
+        private Organization organization;
+        private Season season;
+        //TODO places
 
-
-        public int getHoursPerDay() {
-            return hoursPerDay;
+        public Season getSeason() {
+            return season;
         }
 
-        public void setHoursPerDay(int hoursPerDay) {
-            this.hoursPerDay = hoursPerDay;
+        public void setSeason(Season season) {
+            this.season = season;
         }
 
-        public int getStartOfDay() {
-            return startOfDay;
+        public Organization getOrganization() {
+            return organization;
         }
 
-        public void setStartOfDay(int startOfDay) {
-            this.startOfDay = startOfDay;
-        }
-
-        public List<String> getCourtNames() {
-            return courtNames;
-        }
-
-        public void setCourtNames(List<String> courtNames) {
-            this.courtNames = courtNames;
-        }
-
-        public String getOrganizationName() {
-            return organizationName;
-        }
-
-        public void setOrganizationName(String organizationName) {
-            this.organizationName = organizationName;
+        public void setOrganization(Organization organization) {
+            this.organization = organization;
         }
     }
+
 }

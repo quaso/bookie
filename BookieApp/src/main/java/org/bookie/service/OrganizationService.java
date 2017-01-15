@@ -15,9 +15,14 @@ public class OrganizationService {
 	@Autowired
 	private OrganizationRepository organizationRepository;
 
-	public Organization findByName(final String organizationName) throws OrganizationNotFoundException {
-		return this.organizationRepository.findByName(organizationName)
-				.orElseThrow(() -> new OrganizationNotFoundException(organizationName));
+	public Organization findByName(final String organizationCode) throws OrganizationNotFoundException {
+		return this.organizationRepository.findByCode(organizationCode)
+				.orElseThrow(() -> new OrganizationNotFoundException(organizationCode));
+	}
+
+	public Organization findByCode(final String organizationCode) throws OrganizationNotFoundException {
+		return this.organizationRepository.findByCode(organizationCode)
+				.orElseThrow(() -> new OrganizationNotFoundException(organizationCode));
 	}
 
 	public void createOrUpdateOrganization(final Organization organization) {

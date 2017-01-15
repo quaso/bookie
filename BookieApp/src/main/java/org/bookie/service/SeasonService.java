@@ -58,19 +58,19 @@ public class SeasonService {
 		return this.seasonRepository.findOne(seasonId);
 	}
 
-	public Season getByDate(final String organizationName, final Date date) {
-		return this.seasonRepository.findByOrganizationNameEqualsAndDateStartLessThanEqualAndDateEndGreaterThanEqual(
-				organizationName, date, date);
+	public Season getByDate(final String organizationCode, final Date date) {
+		return this.seasonRepository.findByOrganizationCodeEqualsAndDateStartLessThanEqualAndDateEndGreaterThanEqual(
+				organizationCode, date, date);
 	}
 
-	public SeasonDetails getDetailsCurrent(final String organizationName) {
-		return this.getDetailsByDate(organizationName, new Date());
+	public SeasonDetails getDetailsCurrent(final String organizationCode) {
+		return this.getDetailsByDate(organizationCode, new Date());
 	}
 
-	public SeasonDetails getDetailsByDate(final String organizationName, final Date date) {
+	public SeasonDetails getDetailsByDate(final String organizationCode, final Date date) {
 		SeasonDetails result = null;
 
-		final Season currentSeason = this.getByDate(organizationName, date);
+		final Season currentSeason = this.getByDate(organizationCode, date);
 
 		if (currentSeason != null) {
 			result = new SeasonDetails(currentSeason,

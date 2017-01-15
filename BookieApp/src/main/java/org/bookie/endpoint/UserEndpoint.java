@@ -54,16 +54,16 @@ public class UserEndpoint {
 
 	@RequestMapping(method = RequestMethod.POST, value = "/role/")
 	@ResponseStatus(HttpStatus.CREATED)
-	public void addUserToRole(final @RequestHeader String organizationName,
+	public void addUserToRole(final @RequestHeader String organizationCode,
 			final @RequestParam String userId, final @RequestParam String roleName) throws NotFoundException {
-		this.userService.addUserToRole(userId, roleName, organizationName);
+		this.userService.addUserToRole(userId, roleName, organizationCode);
 	}
 
 	@RequestMapping(method = RequestMethod.DELETE, value = "/role/")
 	@ResponseStatus(HttpStatus.OK)
-	public void removeUserFromRole(final @RequestHeader String organizationName,
+	public void removeUserFromRole(final @RequestHeader String organizationCode,
 			final @RequestParam String userId, final @RequestParam String roleName) {
-		this.userService.deleteUserFromRole(userId, roleName, organizationName);
+		this.userService.deleteUserFromRole(userId, roleName, organizationCode);
 	}
 
 	@ExceptionHandler({ EmptyResultDataAccessException.class, NotFoundException.class })

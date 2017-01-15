@@ -36,9 +36,9 @@ public class BookingRepositoryCustomImpl implements BookingRepositoryCustom {
 
 	@Override
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public List<OwnerTimeSlot> findNoOwner(final String organizationName, final Date timeStart, final Date timeEnd,
+	public List<OwnerTimeSlot> findNoOwner(final String organizationCode, final Date timeStart, final Date timeEnd,
 			final Collection<String> types, final Collection<String> placeIds, final String ownerId) {
-		return this.find(organizationName, timeStart, timeEnd, types, placeIds, ownerId, queryBase -> {
+		return this.find(organizationCode, timeStart, timeEnd, types, placeIds, ownerId, queryBase -> {
 			return (JPAQueryBase) queryBase.select(
 					Projections.fields(Booking.class, QBooking.booking.timeStart, QBooking.booking.timeEnd,
 							QBooking.booking.place));
@@ -47,10 +47,10 @@ public class BookingRepositoryCustomImpl implements BookingRepositoryCustom {
 
 	@Override
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public List<OwnerTimeSlot> findWithOwner(final String organizationName, final Date timeStart, final Date timeEnd,
+	public List<OwnerTimeSlot> findWithOwner(final String organizationCode, final Date timeStart, final Date timeEnd,
 			final Collection<String> types, final Collection<String> placeIds, final String ownerId) {
 
-		return this.find(organizationName, timeStart, timeEnd, types, placeIds, ownerId, queryBase -> {
+		return this.find(organizationCode, timeStart, timeEnd, types, placeIds, ownerId, queryBase -> {
 			return (JPAQueryBase) queryBase.select(
 					Projections.fields(Booking.class, QBooking.booking.timeStart, QBooking.booking.timeEnd,
 							QBooking.booking.place, QBooking.booking.owner));
@@ -58,15 +58,15 @@ public class BookingRepositoryCustomImpl implements BookingRepositoryCustom {
 	}
 
 	@Override
-	public List<OwnerTimeSlot> findBooking(final String organizationName, final Date timeStart, final Date timeEnd,
+	public List<OwnerTimeSlot> findBooking(final String organizationCode, final Date timeStart, final Date timeEnd,
 			final Collection<String> types, final Collection<String> placeIds, final String ownerId) {
-		return this.find(organizationName, timeStart, timeEnd, types, placeIds, ownerId, queryBase -> {
+		return this.find(organizationCode, timeStart, timeEnd, types, placeIds, ownerId, queryBase -> {
 			return queryBase;
 		});
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private List<OwnerTimeSlot> find(final String organizationName, final Date timeStart, final Date timeEnd,
+	private List<OwnerTimeSlot> find(final String organizationCode, final Date timeStart, final Date timeEnd,
 			final Collection<String> types, final Collection<String> placeIds, final String ownerId,
 			final Function<JPAQueryBase, JPAQueryBase> selectGenerator) {
 
@@ -104,7 +104,7 @@ public class BookingRepositoryCustomImpl implements BookingRepositoryCustom {
 		if (placeIds != null) {
 			query = query.where(qPlace.id.in(placeIds));
 		} else {
-			query = query.where(qOrganization.name.eq(organizationName));
+			query = query.where(qOrganization.code.eq(organizationCode));
 		}
 		if (ownerId != null) {
 			query = query.where(qUser.id.eq(ownerId));

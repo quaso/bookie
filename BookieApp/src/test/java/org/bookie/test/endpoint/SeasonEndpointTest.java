@@ -78,8 +78,7 @@ public class SeasonEndpointTest extends AbstractEndpointTest {
 
 		final List<FieldDescriptor> responseFields = new ArrayList<>();
 		responseFields.addAll(Arrays.asList(
-				this.fieldWithPath("id", "Season id"),
-				this.fieldWithPath("organization", "Organization entity")));
+				this.fieldWithPath("id", "Season id")));
 		responseFields.addAll(requestFields);
 
 		this.mockMvc
