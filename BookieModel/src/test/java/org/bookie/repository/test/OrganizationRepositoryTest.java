@@ -13,6 +13,7 @@ public class OrganizationRepositoryTest extends AbstractTest {
 	public void testCreate() {
 		final Organization org = new Organization();
 		org.setName("name");
+		org.setCode("code");
 		this.organizationRepository.save(org);
 		Assert.assertNotNull(org.getId());
 
@@ -25,12 +26,33 @@ public class OrganizationRepositoryTest extends AbstractTest {
 	public void testCreateUniqueName() {
 		final Organization org = new Organization();
 		org.setName("name");
+		org.setCode("code");
 		this.organizationRepository.save(org);
 
 		this.organizationRepository.findAll();
 		try {
 			final Organization org2 = new Organization();
 			org2.setName("name");
+			org2.setCode(org.getCode()+"XXX");
+			this.organizationRepository.save(org2);
+			this.organizationRepository.findAll();
+			Assert.fail("Unique constraint for name/organization failed");
+		} catch (final DataIntegrityViolationException ex) {
+		}
+	}
+
+	@Test
+	public void testCreateUniqueCode() {
+		final Organization org = new Organization();
+		org.setName("name");
+		org.setCode("code");
+		this.organizationRepository.save(org);
+
+		this.organizationRepository.findAll();
+		try {
+			final Organization org2 = new Organization();
+			org2.setName(org.getName()+"XXXX");
+			org2.setCode("code");
 			this.organizationRepository.save(org2);
 			this.organizationRepository.findAll();
 			Assert.fail("Unique constraint for name/organization failed");
