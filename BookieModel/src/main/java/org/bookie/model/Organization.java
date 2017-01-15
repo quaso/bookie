@@ -57,6 +57,6 @@ public class Organization extends AbstractEntity {
 
 	@Override
 	public String toString() {
-		return "Organization [name=" + this.name + "]";
+		return "Organization [code=" + this.code + "]";
 	}
 }

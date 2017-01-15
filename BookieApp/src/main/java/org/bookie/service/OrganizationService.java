@@ -15,11 +15,6 @@ public class OrganizationService {
 	@Autowired
 	private OrganizationRepository organizationRepository;
 
-	public Organization findByName(final String organizationCode) throws OrganizationNotFoundException {
-		return this.organizationRepository.findByCode(organizationCode)
-				.orElseThrow(() -> new OrganizationNotFoundException(organizationCode));
-	}
-
 	public Organization findByCode(final String organizationCode) throws OrganizationNotFoundException {
 		return this.organizationRepository.findByCode(organizationCode)
 				.orElseThrow(() -> new OrganizationNotFoundException(organizationCode));

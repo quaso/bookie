@@ -86,18 +86,18 @@ public class OrganizationEndpointTest extends AbstractEndpointTest {
 						.accept(MediaType.APPLICATION_JSON_VALUE)
 						.content(this.objectMapper.writeValueAsString(org)));
 
-		//No need to test integrity constraints - they are handled by UncaughtExceptionFilter
-//		final Organization request = new Organization();
-//		request.setName(org.getName());
+		final Organization request = new Organization();
+		request.setName(org.getName());
+		request.setCode(org.getCode());
 
-//		this.mockMvc
-//				.perform(post("/api/organization/")
-//						.contentType(MediaType.APPLICATION_JSON)
-//						.accept(MediaType.APPLICATION_JSON_VALUE)
-//						.content(this.objectMapper.writeValueAsString(request)))
-//				.andExpect(status().isConflict())
-//				.andDo(this.restDocumentationResultHandler.document(
-//						this.requestHeaders));
+		this.mockMvc
+				.perform(post("/api/organization/")
+						.contentType(MediaType.APPLICATION_JSON)
+						.accept(MediaType.APPLICATION_JSON_VALUE)
+						.content(this.objectMapper.writeValueAsString(request)))
+				.andExpect(status().is5xxServerError())
+				.andDo(this.restDocumentationResultHandler.document(
+						this.requestHeaders));
 	}
 
 }

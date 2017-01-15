@@ -98,8 +98,7 @@ public class PlaceEndpointTest extends AbstractEndpointTest {
 						.accept(MediaType.APPLICATION_JSON_VALUE)
 						.content(this.objectMapper.writeValueAsString(place)));
 
-		//No need to test integrity constraints - they are handled by UncaughtExceptionFilter
-        /*
+
 	    final Place request = new Place();
 		request.setName(place.getName());
 		request.setType(place.getType());
@@ -110,9 +109,9 @@ public class PlaceEndpointTest extends AbstractEndpointTest {
 						.contentType(MediaType.APPLICATION_JSON)
 						.accept(MediaType.APPLICATION_JSON_VALUE)
 						.content(this.objectMapper.writeValueAsString(request)))
-				.andExpect(status().isConflict())
+				.andExpect(status().is5xxServerError())
 				.andDo(this.restDocumentationResultHandler.document(
-						this.requestHeaders));*/
+						this.requestHeaders));
 	}
 
 }
