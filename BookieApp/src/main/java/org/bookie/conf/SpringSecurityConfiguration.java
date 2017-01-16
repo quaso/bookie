@@ -93,17 +93,17 @@ public class SpringSecurityConfiguration extends WebSecurityConfigurerAdapter {
 	//
 	//	}
 
-    @Override
-    public void configure(AuthenticationManagerBuilder auth) throws Exception {
+//    @Override
+//    public void configure(AuthenticationManagerBuilder auth) throws Exception {
 //        auth
 //                .authenticationEventPublisher(new NoopAuthenticationEventPublisher())
 //                .authenticationProvider(jwtAuthenticationProvider());
-    }
+//    }
 
-    @Bean
-    public ObjectMapper objectMapper(){
-	    return new ObjectMapper();
-    }
+//    @Bean
+//    public ObjectMapper objectMapper(){
+//	    return new ObjectMapper();
+//    }
 
 //    @Bean
 //    public JwtAuthenticationProvider jwtAuthenticationProvider(){
