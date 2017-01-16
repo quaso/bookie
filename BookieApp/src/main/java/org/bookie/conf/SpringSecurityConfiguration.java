@@ -6,9 +6,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.bookie.auth.DatabaseAuthenticationProvider;
 import org.bookie.auth.NoAuthProvider;
 import org.bookie.auth.OrganizationWebAuthenticationDetailsSource;
-import org.bookie.auth.jwt.JwtAuthenticationFilter;
-import org.bookie.auth.jwt.JwtAuthenticationProvider;
-import org.bookie.auth.jwt.NoopAuthenticationEventPublisher;
 import org.bookie.service.UserService;
 import org.bookie.web.rest.RESTAuthenticationEntryPoint;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,8 +69,8 @@ public class SpringSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
 			http.exceptionHandling().authenticationEntryPoint(this.authenticationEntryPoint);
 
-			http.addFilterBefore(new JwtAuthenticationFilter(authenticationManager()), AbstractPreAuthenticatedProcessingFilter.class)
-					.addFilterBefore(new BasicAuthenticationFilter(authenticationManager()), BasicAuthenticationFilter.class);
+//			http.addFilterBefore(new JwtAuthenticationFilter(authenticationManager()), AbstractPreAuthenticatedProcessingFilter.class)
+//					.addFilterBefore(new BasicAuthenticationFilter(authenticationManager()), BasicAuthenticationFilter.class);
 
 			// IMPORTANT
 			http.httpBasic()
@@ -98,9 +95,9 @@ public class SpringSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Override
     public void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth
-                .authenticationEventPublisher(new NoopAuthenticationEventPublisher())
-                .authenticationProvider(jwtAuthenticationProvider());
+//        auth
+//                .authenticationEventPublisher(new NoopAuthenticationEventPublisher())
+//                .authenticationProvider(jwtAuthenticationProvider());
     }
 
     @Bean
@@ -108,10 +105,10 @@ public class SpringSecurityConfiguration extends WebSecurityConfigurerAdapter {
 	    return new ObjectMapper();
     }
 
-    @Bean
-    public JwtAuthenticationProvider jwtAuthenticationProvider(){
-        return new JwtAuthenticationProvider();
-    }
+//    @Bean
+//    public JwtAuthenticationProvider jwtAuthenticationProvider(){
+//        return new JwtAuthenticationProvider();
+//    }
 
 	@Bean
 	public WebAuthenticationDetailsSource authenticationDetailsSource() {
