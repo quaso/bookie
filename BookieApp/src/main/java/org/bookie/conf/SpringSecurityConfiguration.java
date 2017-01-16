@@ -1,5 +1,6 @@
 package org.bookie.conf;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.bookie.auth.DatabaseAuthenticationProvider;
 import org.bookie.auth.NoAuthProvider;
 import org.bookie.auth.OrganizationWebAuthenticationDetailsSource;
@@ -26,8 +27,6 @@ import com.allanditzel.springframework.security.web.csrf.CsrfTokenResponseHeader
 @Configuration
 @EnableWebSecurity
 public class SpringSecurityConfiguration extends WebSecurityConfigurerAdapter {
-	private static final String MBEAN_TOMCAT_SERVICE = "Tomcat:type=Service";
-
 	@Autowired
 	private Environment env;
 
@@ -39,31 +38,35 @@ public class SpringSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
 	@Override
 	protected void configure(final HttpSecurity http) throws Exception {
+		final String[] activeProfiles = this.env.getActiveProfiles();
+		if (!ArrayUtils.contains(activeProfiles, "dbAuth")) {
+			http.csrf().disable().authorizeRequests().antMatchers("/**").not().authenticated();
+		} else {
+			final CsrfTokenResponseHeaderBindingFilter csrfTokenFilter = new CsrfTokenResponseHeaderBindingFilter();
+			http.addFilterAfter(csrfTokenFilter, CsrfFilter.class);
 
-		final CsrfTokenResponseHeaderBindingFilter csrfTokenFilter = new CsrfTokenResponseHeaderBindingFilter();
-		http.addFilterAfter(csrfTokenFilter, CsrfFilter.class);
+			http.logout()
+					.logoutRequestMatcher(new AntPathRequestMatcher("/api/logout", "GET"))
+					.logoutSuccessUrl("/logged-out.html");
 
-		http.logout()
-				.logoutRequestMatcher(new AntPathRequestMatcher("/api/logout", "GET"))
-				.logoutSuccessUrl("/logged-out.html");
+			//		http.authorizeRequests()
+			//				.antMatchers("/logged-out.html").permitAll()
+			//				.antMatchers("/access-denied.html").permitAll()
+			//				.antMatchers("/api/logout").permitAll()
+			//				.antMatchers("/api/logged").permitAll();
 
-		//		http.authorizeRequests()
-		//				.antMatchers("/logged-out.html").permitAll()
-		//				.antMatchers("/access-denied.html").permitAll()
-		//				.antMatchers("/api/logout").permitAll()
-		//				.antMatchers("/api/logged").permitAll();
+			http.exceptionHandling().authenticationEntryPoint(this.authenticationEntryPoint);
 
-		http.exceptionHandling().authenticationEntryPoint(this.authenticationEntryPoint);
+			//TODO JWT
+			//        http.formLogin()
+			//                .loginProcessingUrl("/api/login/")
+			//                .successHandler(authenticationSuccessHandler)
+			//                .failureHandler(authenticationFailureHandler);
 
-		//TODO JWT
-		//        http.formLogin()
-		//                .loginProcessingUrl("/api/login/")
-		//                .successHandler(authenticationSuccessHandler)
-		//                .failureHandler(authenticationFailureHandler);
-
-		// IMPORTANT
-		http.httpBasic()
-				.authenticationDetailsSource(this.authenticationDetailsSource);
+			// IMPORTANT
+			http.httpBasic()
+					.authenticationDetailsSource(this.authenticationDetailsSource);
+		}
 	}
 
 	//	@Override
@@ -77,9 +80,7 @@ public class SpringSecurityConfiguration extends WebSecurityConfigurerAdapter {
 	//		super.configure(auth);
 	//		}
 	//
-	//		if (Registry.getRegistry(null, null).findManagedBean(MBEAN_TOMCAT_SERVICE) != null) {
-	//			Registry.getRegistry(null, null).unregisterComponent(MBEAN_TOMCAT_SERVICE);
-	//		}
+	//
 	//	}
 
 	@Bean
