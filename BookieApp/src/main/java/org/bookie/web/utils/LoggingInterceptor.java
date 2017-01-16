@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * Created by kvasnicka on 1/13/17.
  */
+//TODO: this class is not used ?
 public class LoggingInterceptor implements HandlerInterceptor {
 
     private static final Logger logger = LoggerFactory.getLogger(LoggingInterceptor.class);

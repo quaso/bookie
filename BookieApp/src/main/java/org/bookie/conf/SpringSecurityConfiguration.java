@@ -1,6 +1,5 @@
 package org.bookie.conf;
 
-import com.allanditzel.springframework.security.web.csrf.CsrfTokenResponseHeaderBindingFilter;
 import org.bookie.auth.DatabaseAuthenticationProvider;
 import org.bookie.auth.NoAuthProvider;
 import org.bookie.auth.OrganizationWebAuthenticationDetailsSource;
@@ -22,6 +21,8 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
+import com.allanditzel.springframework.security.web.csrf.CsrfTokenResponseHeaderBindingFilter;
+
 @Configuration
 @EnableWebSecurity
 public class SpringSecurityConfiguration extends WebSecurityConfigurerAdapter {
@@ -39,34 +40,31 @@ public class SpringSecurityConfiguration extends WebSecurityConfigurerAdapter {
 	@Override
 	protected void configure(final HttpSecurity http) throws Exception {
 
-		CsrfTokenResponseHeaderBindingFilter csrfTokenFilter = new CsrfTokenResponseHeaderBindingFilter();
+		final CsrfTokenResponseHeaderBindingFilter csrfTokenFilter = new CsrfTokenResponseHeaderBindingFilter();
 		http.addFilterAfter(csrfTokenFilter, CsrfFilter.class);
 
 		http.logout()
 				.logoutRequestMatcher(new AntPathRequestMatcher("/api/logout", "GET"))
 				.logoutSuccessUrl("/logged-out.html");
 
-//		http.authorizeRequests()
-//				.antMatchers("/logged-out.html").permitAll()
-//				.antMatchers("/access-denied.html").permitAll()
-//				.antMatchers("/api/logout").permitAll()
-//				.antMatchers("/api/logged").permitAll();
+		//		http.authorizeRequests()
+		//				.antMatchers("/logged-out.html").permitAll()
+		//				.antMatchers("/access-denied.html").permitAll()
+		//				.antMatchers("/api/logout").permitAll()
+		//				.antMatchers("/api/logged").permitAll();
 
-
-		http.exceptionHandling().authenticationEntryPoint(authenticationEntryPoint);
+		http.exceptionHandling().authenticationEntryPoint(this.authenticationEntryPoint);
 
 		//TODO JWT
-//        http.formLogin()
-//                .loginProcessingUrl("/api/login/")
-//                .successHandler(authenticationSuccessHandler)
-//                .failureHandler(authenticationFailureHandler);
+		//        http.formLogin()
+		//                .loginProcessingUrl("/api/login/")
+		//                .successHandler(authenticationSuccessHandler)
+		//                .failureHandler(authenticationFailureHandler);
 
-
-        // IMPORTANT
-        http.httpBasic()
-                .authenticationDetailsSource(this.authenticationDetailsSource);
-    }
-
+		// IMPORTANT
+		http.httpBasic()
+				.authenticationDetailsSource(this.authenticationDetailsSource);
+	}
 
 	//	@Override
 	//	protected void configure(final AuthenticationManagerBuilder auth) throws Exception {
@@ -95,7 +93,6 @@ public class SpringSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
 		@Bean
 		public AuthenticationProvider noAuthenticationProvider() {
-			//			return new NullAuthenticationProvider();
 			return new NoAuthProvider();
 		}
 
