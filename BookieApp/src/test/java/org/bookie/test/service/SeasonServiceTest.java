@@ -4,12 +4,13 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.Iterator;
 
 import org.bookie.model.Organization;
 import org.bookie.model.Place;
-import org.bookie.model.PlacesInfo;
 import org.bookie.model.Season;
 import org.bookie.model.SeasonDetails;
+import org.bookie.model.SeasonDetails.PlaceGroup;
 import org.bookie.repository.PlaceRepository;
 import org.bookie.service.SeasonService;
 import org.bookie.test.AbstractTest;
@@ -66,15 +67,16 @@ public class SeasonServiceTest extends AbstractTest {
 		Assert.assertNotNull(current);
 		Assert.assertNotNull(current.getSeason());
 		Assert.assertEquals(season.getTimeStart(), current.getSeason().getTimeStart());
-		Assert.assertEquals(2, current.getPlaces().size());
-		final PlacesInfo placesInfo0 = current.getPlaces().get(0);
-		final PlacesInfo placesInfo1 = current.getPlaces().get(1);
-		if ("aaa".equals(placesInfo0.getPlaceType())) {
-			Assert.assertEquals(3, placesInfo0.getPlaceCount());
-			Assert.assertEquals(2, placesInfo1.getPlaceCount());
+		Assert.assertEquals(2, current.getPlaceGroups().size());
+		final Iterator<PlaceGroup> iterator = current.getPlaceGroups().iterator();
+		final PlaceGroup placesGrp0 = iterator.next();
+		final PlaceGroup placesGrp1 = iterator.next();
+		if ("aaa".equals(placesGrp0.getType())) {
+			Assert.assertEquals(3, placesGrp0.getPlaces().size());
+			Assert.assertEquals(2, placesGrp1.getPlaces().size());
 		} else {
-			Assert.assertEquals(3, placesInfo1.getPlaceCount());
-			Assert.assertEquals(2, placesInfo0.getPlaceCount());
+			Assert.assertEquals(3, placesGrp1.getPlaces().size());
+			Assert.assertEquals(2, placesGrp0.getPlaces().size());
 		}
 
 		final SeasonDetails seasonDetails = this.seasonService.getDetailsByDate(this.org.getName(),
@@ -82,8 +84,8 @@ public class SeasonServiceTest extends AbstractTest {
 		Assert.assertNotNull(seasonDetails);
 		Assert.assertNotNull(seasonDetails.getSeason());
 		Assert.assertEquals(season2.getTimeStart(), seasonDetails.getSeason().getTimeStart());
-		Assert.assertEquals(1, seasonDetails.getPlaces().size());
-		Assert.assertEquals(2, seasonDetails.getPlaces().get(0).getPlaceCount());
+		Assert.assertEquals(1, seasonDetails.getPlaceGroups().size());
+		Assert.assertEquals(2, seasonDetails.getPlaceGroups().iterator().next().getPlaces().size());
 
 		final SeasonDetails seasonDetails2 = this.seasonService.getDetailsByDate(this.org.getName(),
 				season2.getDateStart());
@@ -149,7 +151,7 @@ public class SeasonServiceTest extends AbstractTest {
 		this.createSeasonPlace(season, t3);
 
 		final SeasonDetails current = this.seasonService.getDetailsCurrent(this.org.getName());
-		Assert.assertEquals(1, current.getPlaces().size());
-		Assert.assertEquals(2, current.getPlaces().get(0).getPlaceCount());
+		Assert.assertEquals(1, current.getPlaceGroups().size());
+		Assert.assertEquals(2, current.getPlaceGroups().iterator().next().getPlaces().size());
 	}
 }

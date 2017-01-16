@@ -1,10 +1,7 @@
 package org.bookie.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.Index;
 import javax.persistence.Table;
 
 @Entity
@@ -14,8 +11,8 @@ public class Organization extends AbstractEntity {
 	@Column(name = "name", nullable = false, unique = true)
 	private String name;
 
-    @Column(name = "code", nullable = false, unique = true)
-    private String code;
+	@Column(name = "code", nullable = false, unique = true)
+	private String code;
 
 	@Column(name = "phone", nullable = true)
 	private String phone;
@@ -47,16 +44,17 @@ public class Organization extends AbstractEntity {
 		this.email = email;
 	}
 
-    public String getCode() {
-        return code;
-    }
+	public String getCode() {
+		return this.code;
+	}
 
-    public void setCode(String code) {
-        this.code = code;
-    }
+	public void setCode(final String code) {
+		this.code = code;
+	}
 
 	@Override
 	public String toString() {
-		return "Organization [code=" + this.code + "]";
+		return "Organization [name=" + this.name + ", code=" + this.code + "]";
 	}
+
 }

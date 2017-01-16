@@ -11,6 +11,8 @@ import javax.persistence.UniqueConstraint;
 
 import org.hibernate.annotations.Proxy;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Proxy(lazy = false)
 @Table(name = "Place", uniqueConstraints = @UniqueConstraint(columnNames = { "name", "type", "organizationId" }))
@@ -28,6 +30,7 @@ public class Place extends AbstractEntity {
 	@ManyToOne(targetEntity = Organization.class, fetch = FetchType.LAZY)
 	@org.hibernate.annotations.Cascade({ org.hibernate.annotations.CascadeType.LOCK })
 	@JoinColumns({ @JoinColumn(name = "organizationId", referencedColumnName = "id", nullable = false) })
+	@JsonIgnore
 	private Organization organization;
 
 	public void setName(final String value) {

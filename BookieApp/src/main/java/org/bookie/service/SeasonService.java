@@ -73,8 +73,8 @@ public class SeasonService {
 		final Season currentSeason = this.getByDate(organizationCode, date);
 
 		if (currentSeason != null) {
-			result = new SeasonDetails(currentSeason,
-					this.seasonPlaceRepository.findEnabledPlacesCountForSeason(currentSeason.getId()));
+			result = new SeasonDetails(currentSeason, this.seasonPlaceRepository
+					.findByPlaceEnabledTrueAndSeasonId(currentSeason.getId()).map(sp -> sp.getPlace()));
 		}
 
 		return result;

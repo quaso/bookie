@@ -143,9 +143,9 @@ public class SeasonEndpointTest extends AbstractEndpointTest {
 								this.fieldWithPath("season.name", "User readable name of the season",
 										new String[] { "unique", "Yes" }),
 								this.fieldWithPath("season.id", "Season id"),
-								this.fieldWithPath("places", "List of places available during the season"),
-								this.fieldWithPath("places[].placeCount", "Number of places with placeType"),
-								this.fieldWithPath("places[].placeType", "Place type"))));
+								this.fieldWithPath("placeGroups", "List of places available during the season"),
+								this.fieldWithPath("placeGroups[].type", "Place type"),
+								this.fieldWithPath("placeGroups[].places", "List of places' names and ids"))));
 	}
 
 	@Test
@@ -203,8 +203,8 @@ public class SeasonEndpointTest extends AbstractEndpointTest {
 								this.fieldWithPath("season.name", "User readable name of the season",
 										new String[] { "unique", "Yes" }),
 								this.fieldWithPath("season.id", "Season id"),
-								this.fieldWithPath("places", "List of places available during the season"),
-								this.fieldWithPath("places[].placeCount", "Number of places with placeType"),
-								this.fieldWithPath("places[].placeType", "Place type"))));
+								this.fieldWithPath("placeGroups", "List of places available during the season"),
+								this.fieldWithPath("placeGroups[].type", "Place type"),
+								this.fieldWithPath("placeGroups[].places", "List of places' names and ids"))));
 	}
 }

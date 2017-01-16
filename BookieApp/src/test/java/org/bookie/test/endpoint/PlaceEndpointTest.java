@@ -63,8 +63,7 @@ public class PlaceEndpointTest extends AbstractEndpointTest {
 
 		final List<FieldDescriptor> responseFields = new ArrayList<>();
 		responseFields.addAll(Arrays.asList(
-				this.fieldWithPath("id", "Season id"),
-				this.fieldWithPath("organization", "Organization entity")));
+				this.fieldWithPath("id", "Season id")));
 		responseFields.addAll(requestFields);
 
 		this.mockMvc
@@ -98,8 +97,7 @@ public class PlaceEndpointTest extends AbstractEndpointTest {
 						.accept(MediaType.APPLICATION_JSON_VALUE)
 						.content(this.objectMapper.writeValueAsString(place)));
 
-
-	    final Place request = new Place();
+		final Place request = new Place();
 		request.setName(place.getName());
 		request.setType(place.getType());
 
