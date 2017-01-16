@@ -13,16 +13,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
-
 import org.bookie.model.Organization;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.headers.RequestHeadersSnippet;
 import org.springframework.restdocs.payload.FieldDescriptor;
-import org.springframework.test.annotation.DirtiesContext;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
@@ -41,14 +37,17 @@ public class OrganizationEndpointTest extends AbstractEndpointTest {
 	}
 
 	@Test
+	@EndpointTest
 	public void createOrganizationTest() throws JsonProcessingException, Exception {
 		final Organization request = new Organization();
 		request.setName("org 1");
+		request.setCode("org 1");
 		request.setEmail("test@test.com");
 		request.setPhone("+112346");
 
 		final List<FieldDescriptor> requestFields = Arrays.asList(
-				this.fieldWithPath("name", "Organization name"),
+				this.fieldWithPath("name", "Organization human readable name"),
+				this.fieldWithPath("code", "Organization code (used to identify organization in any other REST call)"),
 				this.fieldWithPath("email", "Email address to contact organization"),
 				this.fieldWithPath("phone", "Phone number to contact organization"));
 
@@ -71,8 +70,7 @@ public class OrganizationEndpointTest extends AbstractEndpointTest {
 	}
 
 	@Test
-	@Transactional(value = TxType.NOT_SUPPORTED)
-	@DirtiesContext
+	@EndpointTest
 	public void createDuplicateOrganizationTest() throws JsonProcessingException, Exception {
 		final Organization org = new Organization();
 		org.setName("org 1");

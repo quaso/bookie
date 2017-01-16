@@ -54,6 +54,7 @@ public class SeasonEndpointTest extends AbstractEndpointTest {
 	}
 
 	@Test
+	@EndpointTest
 	public void createSeasonTest() throws Exception {
 		final LocalDate now = LocalDate.now();
 		final Date start = Date.from(now.withDayOfMonth(1).atStartOfDay(ZoneId.systemDefault()).toInstant());
@@ -96,6 +97,7 @@ public class SeasonEndpointTest extends AbstractEndpointTest {
 	}
 
 	@Test
+	@EndpointTest
 	public void getCurrentTest() throws Exception {
 		final Organization org = this.createOrganization("org");
 
@@ -149,6 +151,7 @@ public class SeasonEndpointTest extends AbstractEndpointTest {
 	}
 
 	@Test
+	@EndpointTest
 	public void getByDateTest() throws Exception {
 		final Organization org = this.createOrganization("org");
 

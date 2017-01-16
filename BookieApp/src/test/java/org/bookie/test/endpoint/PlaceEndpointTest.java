@@ -13,9 +13,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
-
 import org.bookie.auth.OrganizationWebAuthenticationDetailsSource.OrganizationWebAuthenticationDetails;
 import org.bookie.model.Organization;
 import org.bookie.model.Place;
@@ -24,7 +21,6 @@ import org.junit.Test;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.headers.RequestHeadersSnippet;
 import org.springframework.restdocs.payload.FieldDescriptor;
-import org.springframework.test.annotation.DirtiesContext;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
@@ -47,6 +43,7 @@ public class PlaceEndpointTest extends AbstractEndpointTest {
 	}
 
 	@Test
+	@EndpointTest
 	public void createPlaceTest() throws JsonProcessingException, Exception {
 		final Organization org = this.createOrganization("org");
 
@@ -81,8 +78,7 @@ public class PlaceEndpointTest extends AbstractEndpointTest {
 	}
 
 	@Test
-	@Transactional(value = TxType.NOT_SUPPORTED)
-	@DirtiesContext
+	@EndpointTest
 	public void createDuplicatePlaceTest() throws JsonProcessingException, Exception {
 		final Organization org = this.createOrganization("org");
 
