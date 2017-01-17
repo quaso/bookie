@@ -4,6 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>bookieApp</artifactId>
+	<packaging>war</packaging>
 
 	<parent>
 		<groupId>org.bookie</groupId>
@@ -101,16 +102,16 @@
 					<forkCount>1</forkCount>
 				</configuration>
 			</plugin>
+			
+<!-- 			<plugin> -->
+<!-- 				<groupId>org.apache.maven.plugins</groupId> -->
+<!-- 				<artifactId>maven-war-plugin</artifactId> -->
+<!-- 				<configuration> -->
+<!-- 					<failOnMissingWebXml>false</failOnMissingWebXml> -->
+<!-- 					<packagingExcludes>WEB-INF/classes/application-*.properties</packagingExcludes> -->
+<!-- 				</configuration> -->
+<!-- 			</plugin> -->
 
-			<!-- <plugin> -->
-			<!-- <groupId>org.apache.maven.plugins</groupId> -->
-			<!-- <artifactId>maven-jar-plugin</artifactId> -->
-			<!-- <configuration> -->
-			<!-- <excludes> -->
-			<!-- <exclude>**/application-*.properties</exclude> -->
-			<!-- </excludes> -->
-			<!-- </configuration> -->
-			<!-- </plugin> -->
 			<plugin>
 				<groupId>org.asciidoctor</groupId>
 				<artifactId>asciidoctor-maven-plugin</artifactId>
