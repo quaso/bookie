@@ -3,6 +3,7 @@ package org.bookie.service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
@@ -15,6 +16,7 @@ import javax.transaction.Transactional;
 import org.bookie.auth.LoggedUser;
 import org.bookie.exception.NotFreeException;
 import org.bookie.model.Booking;
+import org.bookie.model.BookingPattern;
 import org.bookie.model.OwnerTimeSlot;
 import org.bookie.model.Place;
 import org.bookie.model.Season;
@@ -22,6 +24,8 @@ import org.bookie.model.TimeSlot;
 import org.bookie.model.User;
 import org.bookie.repository.BookingRepositoryCustom;
 import org.bookie.repository.PlaceRepository;
+import org.bookie.util.BookingPatternIterator;
+import org.bookie.util.BookingPatternIterator.Interval;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -43,18 +47,13 @@ public class BookingService {
 	@Autowired
 	private SeasonService seasonService;
 
-	public Booking createBooking(final Date timeStart, final Date timeEnd, final String type, final String ownerId,
-			final String placeId, final String note) throws NotFreeException {
+	public List<Booking> createBooking(final BookingPattern bookingPattern, final String type,
+			final String ownerId, final String placeId, final String note) throws NotFreeException {
 		final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		if (authentication == null) {
 			throw new IllegalStateException("Only authenicated users may call this");
 		}
-		if (timeStart.after(timeEnd)) {
-			throw new IllegalArgumentException("Start must be before end");
-		}
-		if (!this.checkSameDay(timeStart, timeEnd)) {
-			throw new IllegalStateException("Start and end dates must be in the same day");
-		}
+		final User createdBy = this.extractDbUserFromAuth(authentication);
 
 		final User owner = this.userService.findById(ownerId);
 		if (owner == null) {
@@ -66,28 +65,80 @@ public class BookingService {
 			throw new IllegalStateException("Place could not be identified");
 		}
 
-		final Season season = this.seasonService.getByDate(place.getOrganization().getCode(), timeStart);
+		final Season season = this.seasonService.getByDate(place.getOrganization().getCode(),
+				bookingPattern.getStartDate());
 		if (season == null) {
 			throw new IllegalStateException("No season is defined for requested booking date");
 		}
 
+		final CreateBookingParameters params = new CreateBookingParameters(season, owner, place, type, note, createdBy);
+
+		final List<Booking> result = new ArrayList<>();
+		if (bookingPattern.isReccurent()) {
+			result.addAll(this.createBookings(bookingPattern, params));
+		} else {
+			final LocalDateTime timeStart = bookingPattern.getStartDate().atTime(bookingPattern.getTimeStart());
+			final LocalDateTime timeEnd = bookingPattern.getEndDate().atTime(bookingPattern.getTimeEnd());
+
+			result.add(this.createSingleBooking(timeStart, timeEnd, params));
+		}
+
+		this.bookingRepository.save(result);
+		return result;
+	}
+
+	private Booking createSingleBooking(final LocalDateTime timeStart, final LocalDateTime timeEnd,
+			final CreateBookingParameters parameters) throws NotFreeException {
+
+		if (timeStart.isAfter(timeEnd)) {
+			throw new IllegalArgumentException("Start must be before end");
+		}
+		if (!this.checkSameDay(timeStart, timeEnd)) {
+			throw new IllegalStateException("Start and end dates must be in the same day");
+		}
+
 		final Booking booking = new Booking();
-		booking.setTimeStart(timeStart);
-		booking.setTimeEnd(timeEnd);
-		booking.setSeason(season);
-		booking.setOwner(owner);
-		booking.setPlace(place);
+		booking.setTimeStart(Date.from(timeStart.atZone(ZoneId.systemDefault()).toInstant()));
+		booking.setTimeEnd(Date.from(timeEnd.atZone(ZoneId.systemDefault()).toInstant()));
+		booking.setSeason(parameters.season);
+		booking.setOwner(parameters.owner);
+		booking.setPlace(parameters.place);
 		booking.setCreatedAt(new Date());
-		booking.setCreatedBy(this.extractDbUserFromAuth(authentication));
-		booking.setType(type);
-		booking.setNote(note);
+		booking.setCreatedBy(parameters.createdBy);
+		booking.setType(parameters.type);
+		booking.setNote(parameters.note);
 
 		// check if the datetime is free
 		if (!this.bookingRepository.checkFreeTime(booking)) {
-			throw new NotFreeException(timeStart, timeEnd, place);
+			throw new NotFreeException(timeStart, timeEnd, parameters.place);
 		}
-		this.bookingRepository.save(booking);
 		return booking;
+	}
+
+	private Collection<Booking> createBookings(final BookingPattern pattern, final CreateBookingParameters parameters)
+			throws NotFreeException {
+		final List<NotFreeException> exceptions = new ArrayList<>();
+		final Collection<Booking> result = new ArrayList<>();
+
+		final BookingPatternIterator patternIterator = new BookingPatternIterator(pattern, parameters.season);
+		while (patternIterator.hasNext()) {
+			final Interval next = patternIterator.next();
+			try {
+				result.add(this.createSingleBooking(next.getStart(), next.getEnd(), parameters));
+			} catch (final NotFreeException e) {
+				exceptions.add(e);
+				// premature iteration finish - too many exceptions
+				if (exceptions.size() == 5) {
+					throw new NotFreeException(exceptions);
+				}
+			}
+		}
+
+		if (exceptions.size() > 0) {
+			throw new NotFreeException(exceptions);
+		}
+
+		return result;
 	}
 
 	public void delete(final String bookingId) {
@@ -201,13 +252,34 @@ public class BookingService {
 		return result;
 	}
 
-	private boolean checkSameDay(final Date timeStart, final Date timeEnd) {
-		final LocalDate lds = timeStart.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-		final LocalDate lde = timeEnd.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+	private boolean checkSameDay(final LocalDateTime timeStart, final LocalDateTime timeEnd) {
+		final LocalDate lds = timeStart.toLocalDate();
+		final LocalDate lde = timeEnd.toLocalDate();
 		return lds.equals(lde);
 	}
 
 	private User extractDbUserFromAuth(final Authentication authentication) {
 		return ((LoggedUser) authentication.getPrincipal()).getDbUser();
+	}
+
+	private class CreateBookingParameters {
+
+		final Season season;
+		final User owner;
+		final Place place;
+		final String type;
+		final String note;
+		final User createdBy;
+
+		public CreateBookingParameters(final Season season, final User owner, final Place place, final String type,
+				final String note, final User createdBy) {
+			this.season = season;
+			this.owner = owner;
+			this.place = place;
+			this.type = type;
+			this.note = note;
+			this.createdBy = createdBy;
+		}
+
 	}
 }

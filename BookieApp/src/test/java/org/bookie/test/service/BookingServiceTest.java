@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.bookie.auth.OrganizationWebAuthenticationDetailsSource.OrganizationWebAuthenticationDetails;
 import org.bookie.exception.NotFreeException;
 import org.bookie.model.Booking;
+import org.bookie.model.BookingPattern;
 import org.bookie.model.Organization;
 import org.bookie.model.Place;
 import org.bookie.model.Season;
@@ -80,10 +81,12 @@ public class BookingServiceTest extends AbstractTest {
 
 	@Test
 	public void testCreate1() throws NotFreeException {
-		final Booking booking = this.bookingService.createBooking(this.date(this.now.atTime(12, 0)),
-				this.date(this.now.atTime(13, 0)), "aaa", this.user1.getId(), this.t1.getId(), null);
+		final List<Booking> bookings = this.bookingService.createBooking(
+				this.createPattern(this.now.atTime(12, 0), this.now.atTime(13, 0)), "aaa", this.user1.getId(),
+				this.t1.getId(), null);
+		Assert.assertEquals(1, bookings.size());
 
-		final Booking booking2 = this.bookingRepository.findOne(booking.getId());
+		final Booking booking2 = this.bookingRepository.findOne(bookings.get(0).getId());
 		Assert.assertEquals(this.user1.getId(), booking2.getOwner().getId());
 		Assert.assertEquals(this.t1.getId(), booking2.getPlace().getId());
 		Assert.assertEquals(this.season.getId(), booking2.getSeason().getId());
@@ -91,27 +94,27 @@ public class BookingServiceTest extends AbstractTest {
 
 	@Test(expected = NotFreeException.class)
 	public void testCreateNotFree1() throws NotFreeException {
-		this.bookingService.createBooking(this.date(this.now.atTime(12, 0)), this.date(this.now.atTime(13, 0)), "aaa",
+		this.bookingService.createBooking(this.createPattern(this.now.atTime(12, 0), this.now.atTime(13, 0)), "aaa",
 				this.user1.getId(), this.t1.getId(), null);
-		this.bookingService.createBooking(this.date(this.now.atTime(12, 0)), this.date(this.now.atTime(13, 0)), "aaa",
+		this.bookingService.createBooking(this.createPattern(this.now.atTime(12, 0), this.now.atTime(13, 0)), "aaa",
 				this.user1.getId(), this.t1.getId(), null);
 	}
 
 	@Test(expected = NotFreeException.class)
 	public void testCreateNotFree2() throws NotFreeException {
-		this.bookingService.createBooking(this.date(this.now.atTime(12, 0)), this.date(this.now.atTime(13, 0)), "aaa",
+		this.bookingService.createBooking(this.createPattern(this.now.atTime(12, 0), this.now.atTime(13, 0)), "aaa",
 				this.user1.getId(), this.t1.getId(), null);
-		this.bookingService.createBooking(this.date(this.now.atTime(12, 59)), this.date(this.now.atTime(13, 5)), "aaa",
+		this.bookingService.createBooking(this.createPattern(this.now.atTime(12, 59), this.now.atTime(13, 5)), "aaa",
 				this.user1.getId(), this.t1.getId(), null);
 	}
 
 	@Test
 	public void testCreate2() throws NotFreeException {
-		this.bookingService.createBooking(this.date(this.now.atTime(12, 0)), this.date(this.now.atTime(13, 0)), "aaa",
+		this.bookingService.createBooking(this.createPattern(this.now.atTime(12, 0), this.now.atTime(13, 0)), "aaa",
 				this.user1.getId(), this.t1.getId(), null);
-		this.bookingService.createBooking(this.date(this.now.atTime(13, 0)), this.date(this.now.atTime(14, 0)), "aaa",
+		this.bookingService.createBooking(this.createPattern(this.now.atTime(13, 0), this.now.atTime(14, 0)), "aaa",
 				this.user1.getId(), this.t1.getId(), null);
-		this.bookingService.createBooking(this.date(this.now.atTime(13, 0)), this.date(this.now.atTime(14, 0)), "aaa",
+		this.bookingService.createBooking(this.createPattern(this.now.atTime(13, 0), this.now.atTime(14, 0)), "aaa",
 				this.user1.getId(), this.t2.getId(), null);
 	}
 
@@ -289,14 +292,16 @@ public class BookingServiceTest extends AbstractTest {
 
 	private Booking createBooking(final LocalDateTime start, final LocalDateTime end, final String type,
 			final User user, final Place place) {
-		Booking booking = null;
+		List<Booking> bookings = null;
 		try {
-			booking = this.bookingService.createBooking(this.date(start), this.date(end), type, user.getId(),
+			bookings = this.bookingService.createBooking(this.createPattern(start, end), type, user.getId(),
 					place.getId(), null);
 		} catch (final NotFreeException e) {
 			Assert.fail(e.getMessage());
 		}
-		return booking;
+		Assert.assertNotNull(bookings);
+		Assert.assertEquals(1, bookings.size());
+		return bookings.get(0);
 	}
 
 	private Authentication authenticate(final String username, final String password, final String organizationName) {
@@ -306,5 +311,14 @@ public class BookingServiceTest extends AbstractTest {
 		request.addHeader(OrganizationWebAuthenticationDetails.HEADER_ORGANIZATION_NAME, organizationName);
 		authRequest.setDetails(this.authenticationDetailsSource.buildDetails(request));
 		return this.providerManager.authenticate(authRequest);
+	}
+
+	private BookingPattern createPattern(final LocalDateTime startTime, final LocalDateTime endTime) {
+		final BookingPattern pattern = new BookingPattern();
+		pattern.setStartDate(startTime.toLocalDate());
+		pattern.setEndDate(endTime.toLocalDate());
+		pattern.setTimeStart(startTime.toLocalTime());
+		pattern.setTimeEnd(endTime.toLocalTime());
+		return pattern;
 	}
 }

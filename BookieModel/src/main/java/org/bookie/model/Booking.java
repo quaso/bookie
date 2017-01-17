@@ -11,7 +11,11 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.Proxy;
+import org.hibernate.annotations.Type;
 import org.springframework.data.annotation.CreatedDate;
+
+import com.querydsl.core.annotations.PropertyType;
+import com.querydsl.core.annotations.QueryType;
 
 @Entity
 @Proxy(lazy = false)
@@ -34,11 +38,6 @@ public class Booking extends AbstractEntity implements OwnerTimeSlot {
 	@Column(name = "createdAt", nullable = false)
 	private Date createdAt;
 
-	@ManyToOne(targetEntity = BookingPattern.class, fetch = FetchType.LAZY)
-	@org.hibernate.annotations.Cascade({ org.hibernate.annotations.CascadeType.LOCK })
-	@JoinColumns({ @JoinColumn(name = "bookingPatternId", referencedColumnName = "id") })
-	private BookingPattern bookingPattern;
-
 	@ManyToOne(targetEntity = User.class, fetch = FetchType.LAZY)
 	@org.hibernate.annotations.Cascade({ org.hibernate.annotations.CascadeType.LOCK })
 	@JoinColumns({ @JoinColumn(name = "createdBy", referencedColumnName = "id", nullable = false) })
@@ -58,6 +57,14 @@ public class Booking extends AbstractEntity implements OwnerTimeSlot {
 	@org.hibernate.annotations.Cascade({ org.hibernate.annotations.CascadeType.LOCK })
 	@JoinColumns({ @JoinColumn(name = "owner", referencedColumnName = "id", nullable = false) })
 	private User owner;
+
+	@Column(name = "pattern", nullable = true)
+	@Type(type = "org.hibernate.type.TextType")
+	@QueryType(PropertyType.NONE)
+	private BookingPattern pattern;
+
+	@Column(name = "patternId", nullable = true)
+	private String patternId;
 
 	@Override
 	public Date getTimeStart() {
@@ -101,12 +108,12 @@ public class Booking extends AbstractEntity implements OwnerTimeSlot {
 		this.createdAt = createdAt;
 	}
 
-	public BookingPattern getBookingPattern() {
-		return this.bookingPattern;
+	public BookingPattern getPattern() {
+		return this.pattern;
 	}
 
-	public void setBookingPattern(final BookingPattern bookingPattern) {
-		this.bookingPattern = bookingPattern;
+	public void setBookingPattern(final BookingPattern pattern) {
+		this.pattern = pattern;
 	}
 
 	public User getCreatedBy() {
@@ -173,9 +180,9 @@ public class Booking extends AbstractEntity implements OwnerTimeSlot {
 			builder.append(this.createdAt);
 			builder.append(", ");
 		}
-		if (this.bookingPattern != null) {
-			builder.append("bookingPattern=");
-			builder.append(this.bookingPattern);
+		if (this.pattern != null) {
+			builder.append("pattern=");
+			builder.append(this.pattern);
 			builder.append(", ");
 		}
 		if (this.createdBy != null) {

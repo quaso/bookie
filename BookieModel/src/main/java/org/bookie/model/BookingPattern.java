@@ -1,126 +1,77 @@
 package org.bookie.model;
 
-import java.util.Date;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.HashSet;
+import java.util.Set;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinColumns;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
+public class BookingPattern {
 
-import org.hibernate.annotations.Proxy;
+	private LocalTime timeStart;
+	private LocalTime timeEnd;
 
-@Entity
-@Proxy(lazy = false)
-@Table(name = "BookingPattern")
-public class BookingPattern extends AbstractEntity {
+	private final Set<DayOfWeek> days = new HashSet<>();
 
-	@Column(name = "pattern", nullable = false, length = 255)
-	private String pattern;
+	private LocalDate startDate;
+	private Boolean wholeSeason;
+	private LocalDate endDate;
+	private Integer occurenceCount;
 
-	@Column(name = "timeStart", nullable = false)
-	@Temporal(TemporalType.DATE)
-	private Date timeStart;
-
-	@Column(name = "timeEnd", nullable = false)
-	@Temporal(TemporalType.DATE)
-	private Date timeEnd;
-
-	@Column(name = "type", nullable = false, length = 255)
-	private String type;
-
-	@Column(name = "createdAt", nullable = false)
-	@Temporal(TemporalType.DATE)
-	private Date createdAt;
-
-	@ManyToOne(targetEntity = User.class, fetch = FetchType.LAZY)
-	@org.hibernate.annotations.Cascade({ org.hibernate.annotations.CascadeType.LOCK })
-	@JoinColumns({ @JoinColumn(name = "createdBy", referencedColumnName = "id", nullable = false) })
-	private User createdBy;
-
-	@ManyToOne(targetEntity = Season.class, fetch = FetchType.LAZY)
-	@org.hibernate.annotations.Cascade({ org.hibernate.annotations.CascadeType.LOCK })
-	@JoinColumns({ @JoinColumn(name = "seasonId", referencedColumnName = "id", nullable = false) })
-	private Season season;
-
-	@ManyToOne(targetEntity = Place.class, fetch = FetchType.LAZY)
-	@org.hibernate.annotations.Cascade({ org.hibernate.annotations.CascadeType.LOCK })
-	@JoinColumns({ @JoinColumn(name = "placeId", referencedColumnName = "id", nullable = false) })
-	private Place place;
-
-	public void setPattern(final String value) {
-		this.pattern = value;
+	public boolean isReccurent() {
+		return !this.days.isEmpty();
 	}
 
-	public String getPattern() {
-		return this.pattern;
-	}
-
-	public Date getTimeStart() {
+	public LocalTime getTimeStart() {
 		return this.timeStart;
 	}
 
-	public void setTimeStart(final Date timeStart) {
+	public void setTimeStart(final LocalTime timeStart) {
 		this.timeStart = timeStart;
 	}
 
-	public Date getTimeEnd() {
+	public LocalTime getTimeEnd() {
 		return this.timeEnd;
 	}
 
-	public void setTimeEnd(final Date timeEnd) {
+	public void setTimeEnd(final LocalTime timeEnd) {
 		this.timeEnd = timeEnd;
 	}
 
-	public void setType(final String value) {
-		this.type = value;
+	public LocalDate getStartDate() {
+		return this.startDate;
 	}
 
-	public String getType() {
-		return this.type;
+	public void setStartDate(final LocalDate startDate) {
+		this.startDate = startDate;
 	}
 
-	public Date getCreatedAt() {
-		return this.createdAt;
+	public Boolean isWholeSeason() {
+		return this.wholeSeason;
 	}
 
-	public void setCreatedAt(final Date createdAt) {
-		this.createdAt = createdAt;
+	public void setWholeSeason(final Boolean wholeSeason) {
+		this.wholeSeason = wholeSeason;
 	}
 
-	public void setCreatedBy(final User value) {
-		this.createdBy = value;
+	public LocalDate getEndDate() {
+		return this.endDate;
 	}
 
-	public User getCreatedBy() {
-		return this.createdBy;
+	public void setEndDate(final LocalDate endDate) {
+		this.endDate = endDate;
 	}
 
-	public void setSeason(final Season value) {
-		this.season = value;
+	public Integer getOccurenceCount() {
+		return this.occurenceCount;
 	}
 
-	public Season getSeason() {
-		return this.season;
+	public void setOccurenceCount(final Integer occurenceCount) {
+		this.occurenceCount = occurenceCount;
 	}
 
-	public void setPlace(final Place value) {
-		this.place = value;
-	}
-
-	public Place getPlace() {
-		return this.place;
-	}
-
-	@Override
-	public String toString() {
-		return "BookingPattern [pattern=" + this.pattern + ", timeStart=" + this.timeStart + ", timeEnd=" + this.timeEnd
-				+ ", type=" + this.type + ", createdAt=" + this.createdAt + ", createdBy=" + this.createdBy
-				+ ", season=" + this.season + ", place=" + this.place + "]";
+	public Set<DayOfWeek> getDays() {
+		return this.days;
 	}
 
 }

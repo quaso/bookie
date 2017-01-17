@@ -1,17 +1,14 @@
 package org.bookie.endpoint;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.Set;
 
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.bookie.exception.NotFreeException;
 import org.bookie.model.Booking;
 import org.bookie.model.BookingEx;
 import org.bookie.service.BookingService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -33,8 +30,8 @@ public class BookingEndpoint {
 	@RequestMapping(method = RequestMethod.POST, value = "/")
 	public ResponseEntity<?> createBooking(final @RequestHeader String organizationCode, //TODO----------organizationCode is not used
 			final @RequestBody BookingEx booking) throws NotFreeException {
-		final Booking result = this.bookingService.createBooking(booking.getTimeStart(), booking.getTimeEnd(),
-				booking.getType(), booking.getOwnerId(), booking.getPlaceId(), booking.getNote());
+		final Collection<Booking> result = this.bookingService.createBooking(booking.getPattern(), booking.getType(),
+				booking.getOwnerId(), booking.getPlaceId(), booking.getNote());
 
 		return new ResponseEntity<>(result, HttpStatus.CREATED);
 	}

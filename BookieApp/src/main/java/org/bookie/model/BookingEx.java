@@ -1,29 +1,18 @@
 package org.bookie.model;
 
-import java.util.Date;
-
 public class BookingEx {
-	private Date timeStart;
-	private Date timeEnd;
+	private BookingPattern pattern;
 	private String type;
 	private String ownerId;
 	private String placeId;
 	private String note;
 
-	public Date getTimeStart() {
-		return this.timeStart;
+	public BookingPattern getPattern() {
+		return this.pattern;
 	}
 
-	public void setTimeStart(final Date timeStart) {
-		this.timeStart = timeStart;
-	}
-
-	public Date getTimeEnd() {
-		return this.timeEnd;
-	}
-
-	public void setTimeEnd(final Date timeEnd) {
-		this.timeEnd = timeEnd;
+	public void setPattern(final BookingPattern pattern) {
+		this.pattern = pattern;
 	}
 
 	public String getType() {

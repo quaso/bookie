@@ -1,5 +1,7 @@
 package org.bookie.service;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Date;
 
 import javax.transaction.Transactional;
@@ -56,6 +58,11 @@ public class SeasonService {
 
 	public Season getById(final String seasonId) {
 		return this.seasonRepository.findOne(seasonId);
+	}
+
+	public Season getByDate(final String organizationCode, final LocalDate ld) {
+		final Date date = Date.from(ld.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
+		return this.getByDate(organizationCode, date);
 	}
 
 	public Season getByDate(final String organizationCode, final Date date) {

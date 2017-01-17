@@ -3,6 +3,7 @@ package org.bookie.configuration;
 import org.bookie.model.Role;
 import org.bookie.repository.BookingRepositoryCustomImpl;
 import org.bookie.repository.RoleRepository;
+import org.bookie.util.BookingPatternConverter;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,5 +19,10 @@ public class DatasourceConfiguration {
 	@Bean
 	public BookingRepositoryCustomImpl bookingRepositoryCustomImpl() {
 		return new BookingRepositoryCustomImpl();
+	}
+
+	@Bean
+	public BookingPatternConverter bookingPatternConverter() {
+		return new BookingPatternConverter();
 	}
 }
